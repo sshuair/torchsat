@@ -174,8 +174,9 @@ class RandomFlip(object):
     def __call__(self, img):
         if random.random() < self.u:
             flip_mode = random.randint(-1, 1)
-            img = flip(img, flip_mode)
-        return flip(img, flip_mode)
+            return flip(img, flip_mode)
+        else:
+            return img
 
 
 
