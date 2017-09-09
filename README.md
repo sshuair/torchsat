@@ -7,6 +7,10 @@ in progress...
 1. transform for multi-channel
     - [x] flip
 2. dataloader for multi channel image, such as tiff
+    - [x] classification
+    - [x] multi-label classification
+    - [ ] object localization
+    - [ ] semantic segmentaion
 3. dataloader for rgb file,such jpg png
 4. use example
     - common use
