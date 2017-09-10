@@ -98,7 +98,7 @@ def to_tensor(pic):
         return img
 
 
-def to_pilimage(pic):
+def to_ndarray(pic):
     if not(_is_numpy_image(pic) or _is_tensor_image(pic)):
         raise TypeError('pic should be Tensor or ndarray. Got {}.'.format(type(pic)))
 
@@ -124,7 +124,8 @@ def to_pilimage(pic):
         if npimg.dtype == np.uint8:
             mode = 'RGB'
     assert mode is not None, '{} is not supported'.format(npimg.dtype)
-    return Image.fromarray(npimg, mode=mode)
+    return npimg
+    # return Image.fromarray(npimg, mode=mode)
 
 
 def normalize(tensor, mean, std):
@@ -169,14 +170,14 @@ class RandomFlip(object):
         4. left to right and then top to bottom: 0.25
     """
 
-    def __init__(self, u=0.25):
-        self.u = 0.25
+    # def __init__(self, u=0.25):
+    #     self.u = 0.25
     def __call__(self, img):
-        if random.random() < self.u:
-            flip_mode = random.randint(-1, 1)
-            return flip(img, flip_mode)
-        else:
+        flip_mode = random.randint(-1, 2)
+        if flip_mode == 2:
             return img
+        else:
+            return flip(img, flip_mode)
 
 
 
