@@ -12,10 +12,11 @@ in progress...
     - [ ] object localization
     - [ ] semantic segmentaion
 3. dataloader for rgb file,such jpg png
-    - [ ] single-label classification
-    - [ ] multi-label classification
+    - [x] single-label classification
+    - [x] multi-label classification
     - [ ] object localization
     - [ ] semantic segmentaion
 4. use example
-    - common use
-    - torch use
+    - [x] classification
+    - [ ] object localization
+    - [ ] semantic segmentaion
