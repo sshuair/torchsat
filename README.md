@@ -6,6 +6,17 @@ in progress...
 ## TODO:
 1. transform for multi-channel
     - [x] flip
+    - [ ] resize
+    - [ ] center_crop
+    - [ ] random_crop
+    - [ ] flip
+    - [ ] horizontal_flip
+    - [ ] vertical_flip
+    - [ ] rotate
+    - [ ] shift
+    - [ ] normaize
+    - [ ] noise
+    - ....
 2. dataloader for multi channel image, such as tiff
     - [x] single-label classification
     - [x] multi-label classification
