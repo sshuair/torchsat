@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 from PIL import Image
-import tifffile
+from skimage.external import tifffile
 from torch.utils.data import DataLoader, Dataset
 
 IMG_EXTENSIONS = [

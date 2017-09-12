@@ -11,7 +11,8 @@ import numpy as np
 import numbers
 import types
 import collections
-import tifffile
+from skimage.external import tifffile
+from skimage import transform
 import cv2
 
 """
@@ -179,7 +180,74 @@ class RandomFlip(object):
         else:
             return flip(img, flip_mode)
 
+def rotate(img, angle=0):
+    """Rotate image by a certain angle around its center.
 
+        Parameters
+        ----------
+        img : ndarray(uint16 or uint8)
+            Input image.
+        angle : integer
+            Rotation angle in degrees in counter-clockwise direction.
+
+        Returns
+        -------
+        rotated : ndarray(uint16 or uint8)
+                Rotated version of the input.
+
+        Examples
+        --------
+        rotate(image, 30)
+        rotate(image, 180)
+    """
+
+    if not _is_numpy_image(img):
+        raise TypeError('img should be numpy ndarray. Got {}'.format(type(img)))
+    if not (isinstance(angle, int)):
+        raise TypeError('Angle should be integer. Got {}'.format(type(angle)))
+
+    type = img.dtype
+    img_new = transform.rotate(img, angle, preserve_range=True)
+    img_new = img_new.astype(type)
+    return img_new
+
+class RandomRotate(object):
+    """rotate the image.
+
+        Args:
+            probability:the probability of the operation
+        Example:
+            >>> transform_multi.Randomrotate()
+
+        """
+
+    def __init__(self, probability=0.5):
+
+        if not 0 < probability <= 1:
+            raise ValueError('Randomrotate.probability error')
+        self.probability = probability
+
+    def __call__(self, img):
+        angle = random.randint(0, 360)
+        r = round(random.uniform(0, 1), 1)
+        print(r,self.probability,angle)
+        if r <= self.probability:
+            return rotate(img, angle)
+        else:
+            return img
+
+
+
+
+
+# ============================================================================
+def segmentation_flip(input, target):
+    # def __call__(self, input, target):
+    flip_mode = random.randint(-1, 2)
+    if flip_mode == 2:
+        return flip(input, flip_mode), flip(target, flip_mode)
+    else:
+        return flip(input, flip_mode), flip(target, flip_mode)
 
 # ====================================================================================================
 
