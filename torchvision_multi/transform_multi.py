@@ -13,6 +13,8 @@ import types
 import collections
 from skimage.external import tifffile
 from skimage import transform
+from skimage import util
+from skimage.util.dtype import img_as_uint
 import cv2
 
 """
@@ -219,7 +221,7 @@ class RandomRotate(object):
         Example:
             >>> transform_multi.Randomrotate()
 
-        """
+    """
 
     def __init__(self, probability=0.5):
 
@@ -230,11 +232,164 @@ class RandomRotate(object):
     def __call__(self, img):
         angle = random.randint(0, 360)
         r = round(random.uniform(0, 1), 1)
-        print(r,self.probability,angle)
         if r <= self.probability:
             return rotate(img, angle)
         else:
             return img
+
+def shift(img, rightshift=5, downshift=5):
+    """
+
+    :param img: the image input
+    :param rightshift: the pixels of shift right
+    :param downshift: the pixels of down right
+    :return: transformed img
+
+    """
+    if not _is_numpy_image(img):
+        raise TypeError('img should be numpy ndarray. Got {}'.format(type(img)))
+    if not (isinstance(rightshift, int)):
+        raise TypeError('shift.rightshift should be integer. Got {}'.format(type(rightshift)))
+    if not (isinstance(downshift, int)):
+        raise TypeError('shift.downshift should be integer. Got {}'.format(type(downshift)))
+
+    type = img.dtype
+    tform = transform.SimilarityTransform(translation=(-rightshift, -downshift))
+    img_new = transform.warp(img, tform, preserve_range=True)
+    img_new = img_new.astype(type)
+    return img_new
+
+class RandomShift(object):
+    """shift the image.
+
+        Args:
+            probability:the probability of the operation (0<double<=1)
+            rightshift: the scale of the shift right (pixels)
+            downshift:the scale of the shift down (pixels)
+        Example:
+            >>> transform_multi.RandomShift(probability=1, rightshift=10, downshift=10)
+
+    """
+
+    def __init__(self, probability=0.5, rightshift=5, downshift=5):
+        if not 0 < probability <= 1 :
+            raise ValueError("RandomShift.probability is error")
+        if not isinstance(rightshift,int):
+            raise ValueError("RandomShift.rightshift is error")
+        if not isinstance(downshift,int):
+            raise ValueError("RandomShift.downshift is error")
+
+        self.probability = probability
+        self.rightshift = rightshift
+        self.downshift = downshift
+
+    def __call__(self, img):
+        r = round(random.uniform(0,1),1)
+        # print(r, self.probability, self.rightshift, self.downshift)
+        if r<=self.probability:
+            rightshift=random.randint(0,self.rightshift)
+            downshift = random.randint(0, self.downshift)
+            return shift(img, rightshift=rightshift, downshift=downshift)
+        else:
+            return img
+
+def randomcrop(img, outsize=(224,224)):
+    """Crop a image at the same time
+
+        Parameters
+        ----------
+        img : ndarray
+        outsize : the shape of the croped image
+
+        Returns
+        -------
+        Croped_image : ndarray
+
+        Examples
+        --------
+        img_new = Crop(img, outsize=(256,256))
+
+    """
+
+    type = img.dtype
+
+    src_rows = img.shape[0]
+    src_cols = img.shape[1]
+    out_shpe = outsize
+    out_rows = out_shpe[0]
+    out_cols = out_shpe[1]
+
+    if (out_rows > src_rows or out_cols > src_cols):
+        raise ValueError("the outsize of the image larger than the input!!!")
+
+    random_rows_up = np.random.randint(0, int(src_rows - out_rows + 1))
+    random_cols_left = np.random.randint(0, int(src_cols - out_cols + 1))
+    random_rows_down = src_rows - out_rows - random_rows_up
+    random_cols_right = src_cols - out_cols - random_cols_left
+
+    img_new = util.crop(img, ((random_rows_up, random_rows_down), (random_cols_left, random_cols_right), (0, 0)))
+
+    img_new = img_new.astype(type)
+    return img_new
+
+
+class RandomCrop(object):
+    """shift the image.
+
+        Args:
+            outsize: the shape of the croped image
+        Example:
+            >>> transform_multi.RandomCrop(1, (256,256))
+
+    """
+    def __init__(self,outsize=(224,224)):
+        self.outsize = outsize
+
+    def __call__(self, img):
+        if self.outsize[0]>img.shape[0] or self.outsize[1]>img.shape[1]:
+            raise ValueError("RandomCrop.outsize larger than the input image")
+
+        return randomcrop(img, self.outsize)
+
+# def addnoise(img, Mean=0, Var=None):
+#     """add gaussian noise to the image
+#
+#         Parameters
+#         ----------
+#         img : ndarray
+#
+#         Returns
+#         -------
+#         Noised_image : ndarray
+#     """
+#
+#     type = img.dtype
+#
+#     if Var==None and type=='uint8':
+#         Var = 0.01
+#     if Var==None and type=='uint16':
+#         Var = 0.00001
+#     img_new = util.random_noise(img, mode='gaussian', mean=Mean, var=Var)
+#
+#     img_new =util.dtype.img_as_uint(img_new, type=type)
+#
+#     return img_new
+
+# class AddNoise(object):
+#
+#     def __init__(self,mean, var):
+
+
+
+
+
+        
+
+
+
+
+
+
 
 
 
@@ -537,50 +692,50 @@ class Lambda(object):
         return self.lambd(img)
 
 
-class RandomCrop(object):
-    """Crop the given PIL.Image at a random location.
-
-    Args:
-        size (sequence or int): Desired output size of the crop. If size is an
-            int instead of sequence like (h, w), a square crop (size, size) is
-            made.
-        padding (int or sequence, optional): Optional padding on each border
-            of the image. Default is 0, i.e no padding. If a sequence of length
-            4 is provided, it is used to pad left, top, right, bottom borders
-            respectively.
-    """
-
-    def __init__(self, size, padding=0):
-        if isinstance(size, numbers.Number):
-            self.size = (int(size), int(size))
-        else:
-            self.size = size
-        self.padding = padding
-
-    def get_params(self, img):
-        w, h = img.size
-        th, tw = self.size
-        if w == tw and h == th:
-            return img
-
-        x1 = random.randint(0, w - tw)
-        y1 = random.randint(0, h - th)
-        return x1, y1, tw, th
-
-    def __call__(self, img):
-        """
-        Args:
-            img (PIL.Image): Image to be cropped.
-
-        Returns:
-            PIL.Image: Cropped image.
-        """
-        if self.padding > 0:
-            img = pad(img, self.padding)
-
-        x1, y1, tw, th = self.get_params(img)
-
-        return crop(img, x1, y1, tw, th)
+# class RandomCrop(object):
+#     """Crop the given PIL.Image at a random location.
+#
+#     Args:
+#         size (sequence or int): Desired output size of the crop. If size is an
+#             int instead of sequence like (h, w), a square crop (size, size) is
+#             made.
+#         padding (int or sequence, optional): Optional padding on each border
+#             of the image. Default is 0, i.e no padding. If a sequence of length
+#             4 is provided, it is used to pad left, top, right, bottom borders
+#             respectively.
+#     """
+#
+#     def __init__(self, size, padding=0):
+#         if isinstance(size, numbers.Number):
+#             self.size = (int(size), int(size))
+#         else:
+#             self.size = size
+#         self.padding = padding
+#
+#     def get_params(self, img):
+#         w, h = img.size
+#         th, tw = self.size
+#         if w == tw and h == th:
+#             return img
+#
+#         x1 = random.randint(0, w - tw)
+#         y1 = random.randint(0, h - th)
+#         return x1, y1, tw, th
+#
+#     def __call__(self, img):
+#         """
+#         Args:
+#             img (PIL.Image): Image to be cropped.
+#
+#         Returns:
+#             PIL.Image: Cropped image.
+#         """
+#         if self.padding > 0:
+#             img = pad(img, self.padding)
+#
+#         x1, y1, tw, th = self.get_params(img)
+#
+#         return crop(img, x1, y1, tw, th)
 
 
 class RandomHorizontalFlip(object):
