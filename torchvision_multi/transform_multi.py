@@ -12,7 +12,7 @@ import numbers
 import types
 import collections
 from skimage.external import tifffile
-from skimage import transform
+from skimage import transform, filters
 from skimage import util
 from skimage.util.dtype import img_as_uint
 import cv2
@@ -225,14 +225,14 @@ class RandomRotate(object):
 
     def __init__(self, probability=0.5):
 
-        if not 0 < probability <= 1:
+        if not 0 <= probability <= 1:
             raise ValueError('Randomrotate.probability error')
         self.probability = probability
 
     def __call__(self, img):
         angle = random.randint(0, 360)
         r = round(random.uniform(0, 1), 1)
-        if r <= self.probability:
+        if r < self.probability:
             return rotate(img, angle)
         else:
             return img
@@ -272,7 +272,7 @@ class RandomShift(object):
     """
 
     def __init__(self, probability=0.5, rightshift=5, downshift=5):
-        if not 0 < probability <= 1 :
+        if not 0 <= probability <= 1 :
             raise ValueError("RandomShift.probability is error")
         if not isinstance(rightshift,int):
             raise ValueError("RandomShift.rightshift is error")
@@ -286,7 +286,7 @@ class RandomShift(object):
     def __call__(self, img):
         r = round(random.uniform(0,1),1)
         # print(r, self.probability, self.rightshift, self.downshift)
-        if r<=self.probability:
+        if r < self.probability:
             rightshift=random.randint(0,self.rightshift)
             downshift = random.randint(0, self.downshift)
             return shift(img, rightshift=rightshift, downshift=downshift)
@@ -351,48 +351,214 @@ class RandomCrop(object):
 
         return randomcrop(img, self.outsize)
 
-# def addnoise(img, Mean=0, Var=None):
-#     """add gaussian noise to the image
-#
-#         Parameters
-#         ----------
-#         img : ndarray
-#
-#         Returns
-#         -------
-#         Noised_image : ndarray
-#     """
-#
-#     type = img.dtype
-#
-#     if Var==None and type=='uint8':
-#         Var = 0.01
-#     if Var==None and type=='uint16':
-#         Var = 0.00001
-#     img_new = util.random_noise(img, mode='gaussian', mean=Mean, var=Var)
-#
-#     img_new =util.dtype.img_as_uint(img_new, type=type)
-#
-#     return img_new
+def noise(img, uintpara=8, Mean=0, Var=None):
+    """add gaussian noise to the image
 
-# class AddNoise(object):
-#
-#     def __init__(self,mean, var):
+        Parameters
+        ----------
+        img : ndarray
+
+        Returns
+        -------
+        Noised_image : ndarray
+    """
+
+    type = img.dtype
 
 
+    if Var==None and type=='uint8':
+        Var = 0.01
+    if Var==None and type=='uint16':
+        Var = 0.00001
+    if Var == None and uintpara==8:
+        Var = 0.01
+        type_uint= 'uint8'
+    if Var == None and uintpara==16:
+        Var = 0.00001
+        type_uint = 'uint16'
 
 
+    img_new = util.random_noise(img, mode='gaussian', mean=Mean, var=Var)
 
-        
+    img_new =util.dtype.img_as_uint(img_new, type=type_uint)
+    img_new = img_new.astype(type)
+
+    return img_new
+
+class RandomNoise(object):
+
+    def __init__(self,probability, uintpara=8, mean=0, var=None):
+        if not 0<= probability <=1 :
+            raise ValueError('AddNoise.probability error')
+        if not (uintpara ==8 or uintpara==16):
+            raise ValueError('RandomNoise.uintpara error')
+
+        self.uintpara=uintpara
+        self.probability = probability
+        self.mean = mean
+        self.var = var
+
+    def __call__(self, img):
+        r = round(random.uniform(0, 1), 1)
+        print(r, self.probability, self.mean, self.var)
+        if r < self.probability:
+            return noise(img, self.uintpara, self.mean, self.var)
+        else:
+            return img
+
+def gaussianblur(img, sigma=1, multichannel=True):
+    """Multi-dimensional Gaussian filter.
+
+    Parameters
+    ----------
+    image : ndarray
+        Input image (grayscale or color) to filter.
+    sigma : scalar or sequence of scalars, optional
+        Standard deviation for Gaussian kernel. The standard
+        deviations of the Gaussian filter are given for each axis as a
+        sequence, or as a single number, in which case it is equal for
+        all axes.
+    multichannel : bool, optional (default: None)
+        Whether the last axis of the image is to be interpreted as multiple
+        channels. If True, each channel is filtered separately (channels are
+        not mixed together). Only 3 channels are supported. If `None`,
+        the function will attempt to guess this, and raise a warning if
+        ambiguous, when the array has shape (M, N, 3).
+
+    Returns
+    -------
+    filtered_image : ndarray
+    """
+
+    type = img.dtype
+    if np.any(np.asarray(sigma) < 0.0):
+        raise ValueError("Sigma values less than zero are not valid")
+
+    img_new = filters.gaussian(img, sigma, multichannel, preserve_range=True)
+    img_new = img_new.astype(type)
+    return img_new
 
 
+class GaussianBlur(object):
+    def __init__(self, probability, sigma=1, multichannel=True):
+        if not 0<= probability <=1 :
+            raise ValueError('GaussianBlur.probability error')
+        if sigma<0:
+            raise ValueError('GaussianBlur.sigma error')
+        self.probability = probability
+        self.sigma = sigma
+        self.multichannel=multichannel
+
+    def __call__(self, img):
+        r = round(random.uniform(0, 1), 1)
+        print(r, self.probability)
+        if r < self.probability:
+            return gaussianblur(img, self.sigma, self.multichannel)
+        else:
+            return img
+
+def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10 ):
+    """2D piecewise affine transformation.
+
+        Control points are used to define the mapping. The transform is based on
+        a Delaunay triangulation of the points to form a mesh. Each triangle is
+        used to find a local affine transform.
+
+        Parameters
+        ----------
+        img : ndarray
+        numcols : int, optional (default: 5)
+            numbers of the colums to transformation
+        numrows : int, optional (default: 5)
+            numbers of the rows to transformation
+        warp_left_right: int, optional (default: 10)
+            the pixels of transformation left and right
+        warp_up_down: int, optional (default: 10)
+            the pixels of transformation up and down
+        Returns
+        -------
+        Transformed_image : ndarray
+
+        Examples
+        --------
+            >>> Transformed_img = piecetransform(image,numcols=10, numrows=10, warp_left_right=5, warp_up_down=5)
+
+        """
+
+    type = image.dtype
+
+    rows, cols = image.shape[0], image.shape[1]
+
+    numcols = numcols
+    numrows = numrows
+
+    src_cols = np.linspace(0, cols, numcols, dtype=int)
+    src_rows = np.linspace(0, rows, numrows, dtype=int)
+    src_rows, src_cols = np.meshgrid(src_rows, src_cols)
+    src = np.dstack([src_cols.flat, src_rows.flat])[0]
+
+    src_rows_new = np.ndarray.transpose(src_rows)
+    src_cols_new = np.ndarray.transpose(src_cols)
+    # src_new = np.dstack([src_cols_new.flat, src_rows_new.flat])[0]
+
+    dst_cols = np.ndarray(src_cols.shape)
+    dst_rows = np.ndarray(src_rows.shape)
+    for i in range(0, numcols):
+        for j in range(0, numrows):
+            if src_cols[i, j] == 0 or src_cols[i, j] == cols:
+                dst_cols[i, j] = src_cols[i, j]
+            else:
+                dst_cols[i, j] = src_cols[i, j] + np.random.uniform(-1, 1) * warp_left_right
+
+            if src_rows[i, j] == 0 or src_rows[i, j] == rows:
+                dst_rows[i, j] = src_rows[i, j]
+            else:
+                dst_rows[i, j] = src_rows[i, j] + np.random.uniform(-1, 1) * warp_up_down
+
+    dst = np.dstack([dst_cols.flat, dst_rows.flat])[0]
+
+    # dst_rows_new = np.ndarray.transpose(dst_rows)
+    # dst_cols_new = np.ndarray.transpose(dst_cols)
+    # dst_new = np.dstack([dst_cols_new.flat, dst_rows_new.flat])[0]
+
+    out_rows = rows
+    out_cols = cols
+
+    tform = transform.PiecewiseAffineTransform()
+    tform.estimate(src, dst)
+
+    img_new = transform.warp(image, tform, output_shape=(out_rows, out_cols), preserve_range=True)
+
+    img_new = img_new.astype(type)
+    return img_new
 
 
+class PieceTransfor():
+    def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
+        if not 0<= probability <=1 :
+            raise ValueError('PieceTransfor.probability error')
+        if numcols<0 :
+            raise ValueError('PieceTransfor.numcols error')
+        if numrows<0 :
+            raise ValueError('PieceTransfor.numrows error')
+        if warp_left_right<0 :
+            raise ValueError('PieceTransfor.warp_left_right error')
+        if warp_up_down<0 :
+            raise ValueError('PieceTransfor.warp_up_down error')
 
+        self.probability = probability
+        self.numcols = numcols
+        self.numrows = numrows
+        self.warp_left_right = warp_left_right
+        self.warp_up_down = warp_up_down
 
-
-
-
+    def __call__(self, img):
+        r = round(random.uniform(0, 1), 1)
+        print(r, self.probability)
+        if r < self.probability:
+            return piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+        else:
+            return img
 
 
 # ============================================================================
