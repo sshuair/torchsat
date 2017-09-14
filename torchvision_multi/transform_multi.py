@@ -211,6 +211,7 @@ def rotate(img, angle=0):
     type = img.dtype
     img_new = transform.rotate(img, angle, preserve_range=True)
     img_new = img_new.astype(type)
+
     return img_new
 
 class RandomRotate(object):
@@ -351,7 +352,7 @@ class RandomCrop(object):
 
         return randomcrop(img, self.outsize)
 
-def noise(img, uintpara=8, Mean=0, Var=None):
+def noise(img, uintpara=16, Mean=0, Var=None):
     """add gaussian noise to the image
 
         Parameters
@@ -372,22 +373,27 @@ def noise(img, uintpara=8, Mean=0, Var=None):
         Var = 0.00001
     if Var == None and uintpara==8:
         Var = 0.01
-        type_uint= 'uint8'
     if Var == None and uintpara==16:
         Var = 0.00001
-        type_uint = 'uint16'
 
+    if uintpara==8:
+        img = img.astype(np.uint8)
+    if uintpara==16:
+        img = img.astype(np.uint16)
 
     img_new = util.random_noise(img, mode='gaussian', mean=Mean, var=Var)
 
-    img_new =util.dtype.img_as_uint(img_new, type=type_uint)
+    img_new =img_as_uint(img_new)
+    if uintpara == 8:
+        img_new = img_new.astype(np.uint8)
+
     img_new = img_new.astype(type)
 
     return img_new
 
 class RandomNoise(object):
 
-    def __init__(self,probability, uintpara=8, mean=0, var=None):
+    def __init__(self,probability, uintpara=16, mean=0, var=None):
         if not 0<= probability <=1 :
             raise ValueError('AddNoise.probability error')
         if not (uintpara ==8 or uintpara==16):
