@@ -539,7 +539,7 @@ def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down
     return img_new
 
 
-class PieceTransfor():
+class PieceTransfor(object):
     def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
         if not 0<= probability <=1 :
             raise ValueError('PieceTransfor.probability error')
@@ -567,17 +567,175 @@ class PieceTransfor():
             return img
 
 
-# ============================================================================
-def segmentation_flip(input, target):
-    # def __call__(self, input, target):
-    flip_mode = random.randint(-1, 2)
-    if flip_mode == 2:
-        return flip(input, flip_mode), flip(target, flip_mode)
-    else:
-        return flip(input, flip_mode), flip(target, flip_mode)
+##======================= semantic segmentation =============================================
+class SegRandomRotate(object):
+    def __init__(self, probability=0.5):
+
+        if not 0 <= probability <= 1:
+            raise ValueError('SegRandomRotate.probability error')
+        self.probability = probability
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegRandomRotate has no target parameters ')
+        angle = random.randint(0, 360)
+        r = round(random.uniform(0, 1), 1)
+        if r < self.probability:
+            img_trans= rotate(img, angle)
+            target_trans=rotate(img, angle)
+            return img_trans, target_trans
+        else:
+            return img, target
+
+class SegRandomShift(object):
+    def __init__(self, probability=0.5, rightshift=5, downshift=5):
+        if not 0 <= probability <= 1:
+            raise ValueError("SegRandomShift.probability is error")
+        if not isinstance(rightshift, int):
+            raise ValueError("SegRandomShift.rightshift is error")
+        if not isinstance(downshift, int):
+            raise ValueError("SegRandomShift.downshift is error")
+
+        self.probability = probability
+        self.rightshift = rightshift
+        self.downshift = downshift
+
+    def __call__(self, img,target='None'):
+        if target==None:
+            raise ValueError('SegRandomShift has no target parameters ')
+        r = round(random.uniform(0, 1), 1)
+        if r < self.probability:
+            rightshift = random.randint(0, self.rightshift)
+            downshift = random.randint(0, self.downshift)
+            img_trans = shift(img, rightshift=rightshift, downshift=downshift)
+            target_trans =shift(target, rightshift=rightshift, downshift=downshift)
+            return img_trans, target_trans
+        else:
+            return img, target
+
+class SegRandomCrop(object):
+    def __init__(self, outsize=(224, 224)):
+        self.outsize = outsize
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegRandomCrop has no target parameters ')
+        if self.outsize[0] > img.shape[0] or self.outsize[1] > img.shape[1]:
+            raise ValueError("SegRandomCrop.outsize larger than the input image")
+
+        img_trans = randomcrop(img, self.outsize)
+        target_trans = randomcrop(target, self.outsize)
+        return img_trans, target_trans
+
+class SegRandomNoise(object):
+
+    def __init__(self, probability, uintpara=16, mean=0, var=None):
+        if not 0 <= probability <= 1:
+            raise ValueError('SegRandomNoise.probability error')
+        if not (uintpara == 8 or uintpara == 16):
+            raise ValueError('SegRandomNoise.uintpara error')
+
+        self.uintpara = uintpara
+        self.probability = probability
+        self.mean = mean
+        self.var = var
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegRandomNoise has no target parameters ')
+        r = round(random.uniform(0, 1), 1)
+        # print(r, self.probability, self.mean, self.var)
+        if r < self.probability:
+            img_trans = noise(img, self.uintpara, self.mean, self.var)
+            target_trans = noise(target, self.uintpara, self.mean, self.var)
+            return img_trans, target_trans
+        else:
+            return img, target
+
+class SegGaussianBlur(object):
+    def __init__(self, probability, sigma=1, multichannel=True):
+        if not 0 <= probability <= 1:
+            raise ValueError('SegGaussianBlur.probability error')
+        if sigma < 0:
+            raise ValueError('SegGaussianBlur.sigma error')
+        self.probability = probability
+        self.sigma = sigma
+        self.multichannel = multichannel
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegGaussianBlur has no target parameters ')
+        r = round(random.uniform(0, 1), 1)
+        # print(r, self.probability)
+        if r < self.probability:
+            img_trans = gaussianblur(img, self.sigma, self.multichannel)
+            target_trans = gaussianblur(target, self.sigma, self.multichannel)
+            return img_trans, target_trans
+        else:
+            return img, target
+
+class SegPieceTransfor(object):
+    def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
+        if not 0 <= probability <= 1:
+            raise ValueError('SegPieceTransfor.probability error')
+        if numcols < 0:
+            raise ValueError('SegPieceTransfor.numcols error')
+        if numrows < 0:
+            raise ValueError('SegPieceTransfor.numrows error')
+        if warp_left_right < 0:
+            raise ValueError('SegPieceTransfor.warp_left_right error')
+        if warp_up_down < 0:
+            raise ValueError('SegPieceTransfor.warp_up_down error')
+
+        self.probability = probability
+        self.numcols = numcols
+        self.numrows = numrows
+        self.warp_left_right = warp_left_right
+        self.warp_up_down = warp_up_down
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegPieceTransfor has no target parameters ')
+        r = round(random.uniform(0, 1), 1)
+        # print(r, self.probability)
+        if r < self.probability:
+            img_trans = piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+            target_trans = piecetransform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+            return img_trans,target_trans
+        else:
+            return img, target
+
+def SegFlip(img, flip_mode):
+    """
+    flip the input ndarray image
+    three case:
+        1. left to right
+        2. top to bottom
+        2. left to right and then top to bottom
+    """
+    return flip(img, flip_mode)
+
+class SegRandomFlip(object):
+    """
+    random flip the ndarray image
+    random probability (default init):
+        1. original: 0.25
+        2. left to right: 0.25
+        3. top to bottom: 0.25
+        4. left to right and then top to bottom: 0.25
+    """
+    # def __init__(self):
+
+    def __call__(self, img, target='None'):
+        if target==None:
+            raise ValueError('SegRandomFlip has no target parameters ')
+        flip_mode = random.randint(-1, 2)
+        if flip_mode == 2:
+            return img, target
+        else:
+            return flip(img, flip_mode), flip(img, target)
 
 # ====================================================================================================
-
 
 class Scale(object):
     """Rescale the input PIL.Image to the given size.
@@ -862,110 +1020,3 @@ class Lambda(object):
 
     def __call__(self, img):
         return self.lambd(img)
-
-
-# class RandomCrop(object):
-#     """Crop the given PIL.Image at a random location.
-#
-#     Args:
-#         size (sequence or int): Desired output size of the crop. If size is an
-#             int instead of sequence like (h, w), a square crop (size, size) is
-#             made.
-#         padding (int or sequence, optional): Optional padding on each border
-#             of the image. Default is 0, i.e no padding. If a sequence of length
-#             4 is provided, it is used to pad left, top, right, bottom borders
-#             respectively.
-#     """
-#
-#     def __init__(self, size, padding=0):
-#         if isinstance(size, numbers.Number):
-#             self.size = (int(size), int(size))
-#         else:
-#             self.size = size
-#         self.padding = padding
-#
-#     def get_params(self, img):
-#         w, h = img.size
-#         th, tw = self.size
-#         if w == tw and h == th:
-#             return img
-#
-#         x1 = random.randint(0, w - tw)
-#         y1 = random.randint(0, h - th)
-#         return x1, y1, tw, th
-#
-#     def __call__(self, img):
-#         """
-#         Args:
-#             img (PIL.Image): Image to be cropped.
-#
-#         Returns:
-#             PIL.Image: Cropped image.
-#         """
-#         if self.padding > 0:
-#             img = pad(img, self.padding)
-#
-#         x1, y1, tw, th = self.get_params(img)
-#
-#         return crop(img, x1, y1, tw, th)
-
-
-class RandomHorizontalFlip(object):
-    """Horizontally flip the given PIL.Image randomly with a probability of 0.5."""
-
-    def __call__(self, img):
-        """
-        Args:
-            img (PIL.Image): Image to be flipped.
-
-        Returns:
-            PIL.Image: Randomly flipped image.
-        """
-        if random.random() < 0.5:
-            return hflip(img)
-        return img
-
-
-class RandomSizedCrop(object):
-    """Crop the given PIL.Image to random size and aspect ratio.
-
-    A crop of random size of (0.08 to 1.0) of the original size and a random
-    aspect ratio of 3/4 to 4/3 of the original aspect ratio is made. This crop
-    is finally resized to given size.
-    This is popularly used to train the Inception networks.
-
-    Args:
-        size: size of the smaller edge
-        interpolation: Default: PIL.Image.BILINEAR
-    """
-
-    def __init__(self, size, interpolation=Image.BILINEAR):
-        self.size = size
-        self.interpolation = interpolation
-
-    def get_params(self, img):
-        for attempt in range(10):
-            area = img.size[0] * img.size[1]
-            target_area = random.uniform(0.08, 1.0) * area
-            aspect_ratio = random.uniform(3. / 4, 4. / 3)
-
-            w = int(round(math.sqrt(target_area * aspect_ratio)))
-            h = int(round(math.sqrt(target_area / aspect_ratio)))
-
-            if random.random() < 0.5:
-                w, h = h, w
-
-            if w <= img.size[0] and h <= img.size[1]:
-                x = random.randint(0, img.size[0] - w)
-                y = random.randint(0, img.size[1] - h)
-                return x, y, w, h
-
-        # Fallback
-        w = min(img.size[0], img.shape[1])
-        x = (img.shape[0] - w) // 2
-        y = (img.shape[1] - w) // 2
-        return x, y, w, w
-
-    def __call__(self, img):
-        x, y, w, h = self.get_params(img)
-        return scaled_crop(img, x, y, w, h, self.size, self.interpolation)
