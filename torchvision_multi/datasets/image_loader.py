@@ -1,6 +1,7 @@
 import csv
 import os
 
+import torch
 import numpy as np
 from PIL import Image
 from skimage.external import tifffile
@@ -83,8 +84,8 @@ def parse_segmentation_lstfile(rootdir, lstpath):
     :return: images path list and labels path list
     """
     images_path = []
-    with open(os.path.join(rootdir, lstpath), 'r', ) as f:
-        for line in csv.reader(f, delimiter=","):
+    with open(lstpath, 'r', ) as f:
+        for line in csv.reader(f, delimiter="\t"):
             image = os.path.join(rootdir, line[0])
             label = os.path.join(rootdir, line[1])
             if os.path.exists(image) and os.path.exists(label):
@@ -166,35 +167,55 @@ class SemanticSegmentationLoader(Dataset):
     Semantic Segmentation Loader 
     """
 
-    def __init__(self, rootdir, filelst, filetype='jpg', transform=None, target_transform=None, loader=_image_loader):
+    def __init__(self, rootdir, lstpath, filetype='jpg', transform=None, target_transform=None, loader=_image_loader):
+        images_path = parse_segmentation_lstfile(rootdir, lstpath)
+        if len(images_path) == 0:
+            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+        self.images_path = images_path
         self.rootdir = rootdir
-        self.filelst = filelst
+        self.lstpath = lstpath
         self.filetype = filetype
         self.transform = transform
         self.target_transform = target_transform
         self.loader = loader
 
-        self.images, self.labels = self.parse_file_path()
+        # self.images, self.labels = self.parse_file_path()
         pass
 
 
+    # def __getitem__(self, index):
+    #     image_path = self.images[index]
+    #     label_path = self.labels[index]
+    #     image = self.loader(image_path, self.filetype)
+    #     label = self.loader(label_path, 'png')
+    #     label = label[:, :, np.newaxis]  #特殊处理 for transform_enhance
+    #
+    #     if self.transform is not None:
+    #         image, label = self.transform([image, label])
+    #         label = label.view(label.shape[1], label.shape[2]).long()  # 经过transform_enhance变换后，处理成width、height，LongTensor
+    #     if self.target_transform is not None:
+    #         label = self.target_transform(label)
+    #
+    #     return image, label
+
     def __getitem__(self, index):
-        image_path = self.images[index]
-        label_path = self.labels[index]
-        image = self.loader(image_path, self.filetype)
-        label = self.loader(label_path, 'png')
-        label = label[:, :, np.newaxis]  #特殊处理 for transform_enhance
+        # image_path = self.images[index]
+        # label_path = self.labels[index]
+        image, target = self.images_path[index]
+        image = self.loader(image, self.filetype)
+        target = self.loader(target, 'png')
 
         if self.transform is not None:
-            image, label = self.transform([image, label])
-            label = label.view(label.shape[1], label.shape[2]).long()  # 经过transform_enhance变换后，处理成width、height，LongTensor
-        if self.target_transform is not None:
-            label = self.target_transform(label)
-
-        return image, label
+            image, target = self.transform(image, target)
+            target = torch.from_numpy(target).long()
+            # label = label.view(label.shape[1], label.shape[2]).long()  # 经过transform_enhance变换后，处理成width、height，LongTensor
+        # if self.target_transform is not None:
+        #     label = self.target_transform(label)
+        return image, target
 
     def __len__(self):
-        return len(self.images)
+        return len(self.images_path)
 
 
     def parse_file_path(self):

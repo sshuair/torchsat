@@ -182,7 +182,7 @@ class RandomFlip(object):
         else:
             return flip(img, flip_mode)
 
-def rotate(img, angle=0):
+def rotate(img, angle=0,order=1):
     """Rotate image by a certain angle around its center.
 
         Parameters
@@ -209,7 +209,7 @@ def rotate(img, angle=0):
         raise TypeError('Angle should be integer. Got {}'.format(type(angle)))
 
     type = img.dtype
-    img_new = transform.rotate(img, angle, preserve_range=True)
+    img_new = transform.rotate(img, angle, order=order, preserve_range=True)
     img_new = img_new.astype(type)
 
     return img_new
@@ -463,7 +463,7 @@ class GaussianBlur(object):
         else:
             return img
 
-def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10 ):
+def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10,order=1):
     """2D piecewise affine transformation.
 
         Control points are used to define the mapping. The transform is based on
@@ -533,7 +533,7 @@ def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down
     tform = transform.PiecewiseAffineTransform()
     tform.estimate(src, dst)
 
-    img_new = transform.warp(image, tform, output_shape=(out_rows, out_cols), preserve_range=True)
+    img_new = transform.warp(image, tform, output_shape=(out_rows, out_cols), order=order, preserve_range=True)
 
     img_new = img_new.astype(type)
     return img_new
@@ -575,14 +575,15 @@ class SegRandomRotate(object):
             raise ValueError('SegRandomRotate.probability error')
         self.probability = probability
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegRandomRotate has no target parameters ')
+    def __call__(self, img, target):
+        pass
+        # if target==None:
+        #     raise ValueError('SegRandomRotate has no target parameters ')
         angle = random.randint(0, 360)
         r = round(random.uniform(0, 1), 1)
         if r < self.probability:
             img_trans= rotate(img, angle)
-            target_trans=rotate(img, angle)
+            target_trans=rotate(target, angle, order=0)
             return img_trans, target_trans
         else:
             return img, target
@@ -600,9 +601,9 @@ class SegRandomShift(object):
         self.rightshift = rightshift
         self.downshift = downshift
 
-    def __call__(self, img,target='None'):
-        if target==None:
-            raise ValueError('SegRandomShift has no target parameters ')
+    def __call__(self, img,target):
+        # if target==None:
+        #     raise ValueError('SegRandomShift has no target parameters ')
         r = round(random.uniform(0, 1), 1)
         if r < self.probability:
             rightshift = random.randint(0, self.rightshift)
@@ -617,9 +618,9 @@ class SegRandomCrop(object):
     def __init__(self, outsize=(224, 224)):
         self.outsize = outsize
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegRandomCrop has no target parameters ')
+    def __call__(self, img, target):
+        # if target==None:
+        #     raise ValueError('SegRandomCrop has no target parameters ')
         if self.outsize[0] > img.shape[0] or self.outsize[1] > img.shape[1]:
             raise ValueError("SegRandomCrop.outsize larger than the input image")
 
@@ -640,15 +641,15 @@ class SegRandomNoise(object):
         self.mean = mean
         self.var = var
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegRandomNoise has no target parameters ')
+    def __call__(self, img, target):
+        # if target==None:
+        #     raise ValueError('SegRandomNoise has no target parameters ')
         r = round(random.uniform(0, 1), 1)
         # print(r, self.probability, self.mean, self.var)
         if r < self.probability:
             img_trans = noise(img, self.uintpara, self.mean, self.var)
-            target_trans = noise(target, self.uintpara, self.mean, self.var)
-            return img_trans, target_trans
+
+            return img_trans, target
         else:
             return img, target
 
@@ -662,15 +663,14 @@ class SegGaussianBlur(object):
         self.sigma = sigma
         self.multichannel = multichannel
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegGaussianBlur has no target parameters ')
+    def __call__(self, img, target):
+        # if target==None:
+        #     raise ValueError('SegGaussianBlur has no target parameters ')
         r = round(random.uniform(0, 1), 1)
         # print(r, self.probability)
         if r < self.probability:
             img_trans = gaussianblur(img, self.sigma, self.multichannel)
-            target_trans = gaussianblur(target, self.sigma, self.multichannel)
-            return img_trans, target_trans
+            return img_trans, target
         else:
             return img, target
 
@@ -693,14 +693,14 @@ class SegPieceTransfor(object):
         self.warp_left_right = warp_left_right
         self.warp_up_down = warp_up_down
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegPieceTransfor has no target parameters ')
+    def __call__(self, img, target):
+        # if target==None:
+        #     raise ValueError('SegPieceTransfor has no target parameters ')
         r = round(random.uniform(0, 1), 1)
         # print(r, self.probability)
         if r < self.probability:
             img_trans = piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
-            target_trans = piecetransform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+            target_trans = piecetransform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down,order=0)
             return img_trans,target_trans
         else:
             return img, target
@@ -726,14 +726,16 @@ class SegRandomFlip(object):
     """
     # def __init__(self):
 
-    def __call__(self, img, target='None'):
-        if target==None:
-            raise ValueError('SegRandomFlip has no target parameters ')
+    def __call__(self, img, target):
+        # if target==None:
+        #     raise ValueError('SegRandomFlip has no target parameters ')
         flip_mode = random.randint(-1, 2)
         if flip_mode == 2:
             return img, target
         else:
-            return flip(img, flip_mode), flip(img, target)
+            return flip(img, flip_mode), flip(target, flip_mode)
+
+
 
 # ====================================================================================================
 
@@ -844,6 +846,23 @@ class Compose(object):
             img = t(img)
         return img
 
+class SegCompose(object):
+    """Composes several transforms together.
+
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+
+    """
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img, target):
+        for t in self.transforms:
+            img, target = t(img, target)
+        return img, target
+
+
 
 class ToTensor(object):
     """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
@@ -862,24 +881,40 @@ class ToTensor(object):
         """
         return to_tensor(pic)
 
+class SegToTensor(object):
+    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
 
-class ToPILImage(object):
-    """Convert a tensor to PIL Image.
-
-    Converts a torch.*Tensor of shape C x H x W or a numpy ndarray of shape
-    H x W x C to a PIL.Image while preserving the value range.
+    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
+    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
     """
 
-    def __call__(self, pic):
+    def __call__(self, img, target):
         """
         Args:
-            pic (Tensor or numpy.ndarray): Image to be converted to PIL.Image.
+            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
 
         Returns:
-            PIL.Image: Image converted to PIL.Image.
-
+            Tensor: Converted image.
         """
-        return to_pilimage(pic)
+        return to_tensor(img), target
+
+# class ToPILImage(object):
+#     """Convert a tensor to PIL Image.
+#
+#     Converts a torch.*Tensor of shape C x H x W or a numpy ndarray of shape
+#     H x W x C to a PIL.Image while preserving the value range.
+#     """
+#
+#     def __call__(self, pic):
+#         """
+#         Args:
+#             pic (Tensor or numpy.ndarray): Image to be converted to PIL.Image.
+#
+#         Returns:
+#             PIL.Image: Image converted to PIL.Image.
+#
+#         """
+#         return to_pilimage(pic)
 
 
 class Normalize(object):
@@ -1020,3 +1055,17 @@ class Lambda(object):
 
     def __call__(self, img):
         return self.lambd(img)
+
+class SegLambda(object):
+    """Apply a user-defined lambda as a transform.
+
+    Args:
+        lambd (function): Lambda/function to be used for transform.
+    """
+
+    def __init__(self, lambd):
+        assert isinstance(lambd, types.LambdaType)
+        self.lambd = lambd
+
+    def __call__(self, img, target):
+        return self.lambd(img), target
