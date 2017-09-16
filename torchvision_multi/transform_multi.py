@@ -99,7 +99,7 @@ def to_tensor(pic):
     if isinstance(img, torch.ByteTensor):
         return img.float().div(255)
     else:
-        return 
+        return
 
 
 def to_ndarray(pic):
@@ -761,12 +761,14 @@ class SegToTensor(object):
         """
         Args:
             img (PIL.Image or numpy.ndarray): Image to be converted to tensor.
-            target (numpy.ndarray): convert target to tensor
+            target (numpy.ndarray): convert target to long tensor
 
         Returns:
             Tensor: Converted image.
         """
-        return to_tensor(img), target
+
+        return to_tensor(img), torch.from_numpy(target).long()
+
 
 # ======================================== common use class ============================================================
 
@@ -790,6 +792,7 @@ class Compose(object):
         for t in self.transforms:
             img = t(img)
         return img
+
 
 class SegCompose(object):
     """Composes several transforms together for segmantation.

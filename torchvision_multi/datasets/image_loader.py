@@ -19,7 +19,7 @@ TIF_EXTENSIONS = [
 
 def _image_loader(path, filetype):
     """
-    loading image from path
+    loading image from the given path
     :param path: image path
     :param filetype: image type
     :return: ndarray image
@@ -92,7 +92,6 @@ def parse_segmentation_lstfile(rootdir, lstpath):
                 item = (image, label)
                 images_path.append(item)
     return images_path
-
 
 
 class SingleLabelImageLoader(Dataset):
@@ -180,25 +179,6 @@ class SemanticSegmentationLoader(Dataset):
         self.target_transform = target_transform
         self.loader = loader
 
-        # self.images, self.labels = self.parse_file_path()
-        pass
-
-
-    # def __getitem__(self, index):
-    #     image_path = self.images[index]
-    #     label_path = self.labels[index]
-    #     image = self.loader(image_path, self.filetype)
-    #     label = self.loader(label_path, 'png')
-    #     label = label[:, :, np.newaxis]  #特殊处理 for transform_enhance
-    #
-    #     if self.transform is not None:
-    #         image, label = self.transform([image, label])
-    #         label = label.view(label.shape[1], label.shape[2]).long()  # 经过transform_enhance变换后，处理成width、height，LongTensor
-    #     if self.target_transform is not None:
-    #         label = self.target_transform(label)
-    #
-    #     return image, label
-
     def __getitem__(self, index):
         # image_path = self.images[index]
         # label_path = self.labels[index]
@@ -208,7 +188,7 @@ class SemanticSegmentationLoader(Dataset):
 
         if self.transform is not None:
             image, target = self.transform(image, target)
-            target = torch.from_numpy(target).long()
+            # target = torch.from_numpy(target).long()
             # label = label.view(label.shape[1], label.shape[2]).long()  # 经过transform_enhance变换后，处理成width、height，LongTensor
         # if self.target_transform is not None:
         #     label = self.target_transform(label)
