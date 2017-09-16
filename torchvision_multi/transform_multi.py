@@ -24,17 +24,18 @@ import cv2
 2. 如果是分类问题，只需要处理input，那么直接像原来一样使用compose调用相应的class或者lamdba
 3. 如果是分割问题，需要同时操作input和target，那么user自己编写函数，生成相应的param去操作
 # support operation
-resize
-center_crop
-random_crop
-flip
-horizontal_flip
-vertical_flip
-rotate
-shift
-normaize
-noise
-dropout
+[ ]resize
+[ ]center_crop
+[x]random_crop
+[x]flip
+[ ]horizontal_flip
+[ ]vertical_flip
+[x]rotate
+[x]shift
+[ ]normaize
+[x]noise
+[ ]dropout
+[ ]pad
 """
 
 
@@ -98,7 +99,7 @@ def to_tensor(pic):
     if isinstance(img, torch.ByteTensor):
         return img.float().div(255)
     else:
-        return img
+        return 
 
 
 def to_ndarray(pic):
@@ -146,41 +147,6 @@ def flip(img, flip_mode):
         raise TypeError('flipCode should be integer. Got {}'.format(type(flip_mode)))
     return cv2.flip(img, flip_mode)
 
-class Flip(object):
-    """
-    flip the input ndarray image
-    three case:
-        1. left to right
-        2. top to bottom
-        2. left to right and then top to bottom
-    """
-
-    def __init__(self, flip_mode):
-        assert isinstance(flip_mode, int)
-        self.flip_mode = flip_mode
-    
-    def __call__(self, img):
-        
-        return flip(img, self.flip_mode)
-
-class RandomFlip(object):
-    """
-    random flip the ndarray image
-    random probability (default init):
-        1. original: 0.25
-        2. left to right: 0.25
-        3. top to bottom: 0.25
-        4. left to right and then top to bottom: 0.25
-    """
-
-    # def __init__(self, u=0.25):
-    #     self.u = 0.25
-    def __call__(self, img):
-        flip_mode = random.randint(-1, 2)
-        if flip_mode == 2:
-            return img
-        else:
-            return flip(img, flip_mode)
 
 def rotate(img, angle=0,order=1):
     """Rotate image by a certain angle around its center.
@@ -214,29 +180,6 @@ def rotate(img, angle=0,order=1):
 
     return img_new
 
-class RandomRotate(object):
-    """rotate the image.
-
-        Args:
-            probability:the probability of the operation
-        Example:
-            >>> transform_multi.Randomrotate()
-
-    """
-
-    def __init__(self, probability=0.5):
-
-        if not 0 <= probability <= 1:
-            raise ValueError('Randomrotate.probability error')
-        self.probability = probability
-
-    def __call__(self, img):
-        angle = random.randint(0, 360)
-        r = round(random.uniform(0, 1), 1)
-        if r < self.probability:
-            return rotate(img, angle)
-        else:
-            return img
 
 def shift(img, rightshift=5, downshift=5):
     """
@@ -260,39 +203,6 @@ def shift(img, rightshift=5, downshift=5):
     img_new = img_new.astype(type)
     return img_new
 
-class RandomShift(object):
-    """shift the image.
-
-        Args:
-            probability:the probability of the operation (0<double<=1)
-            rightshift: the scale of the shift right (pixels)
-            downshift:the scale of the shift down (pixels)
-        Example:
-            >>> transform_multi.RandomShift(probability=1, rightshift=10, downshift=10)
-
-    """
-
-    def __init__(self, probability=0.5, rightshift=5, downshift=5):
-        if not 0 <= probability <= 1 :
-            raise ValueError("RandomShift.probability is error")
-        if not isinstance(rightshift,int):
-            raise ValueError("RandomShift.rightshift is error")
-        if not isinstance(downshift,int):
-            raise ValueError("RandomShift.downshift is error")
-
-        self.probability = probability
-        self.rightshift = rightshift
-        self.downshift = downshift
-
-    def __call__(self, img):
-        r = round(random.uniform(0,1),1)
-        # print(r, self.probability, self.rightshift, self.downshift)
-        if r < self.probability:
-            rightshift=random.randint(0,self.rightshift)
-            downshift = random.randint(0, self.downshift)
-            return shift(img, rightshift=rightshift, downshift=downshift)
-        else:
-            return img
 
 def randomcrop(img, outsize=(224,224)):
     """Crop a image at the same time
@@ -334,24 +244,6 @@ def randomcrop(img, outsize=(224,224)):
     return img_new
 
 
-class RandomCrop(object):
-    """shift the image.
-
-        Args:
-            outsize: the shape of the croped image
-        Example:
-            >>> transform_multi.RandomCrop(1, (256,256))
-
-    """
-    def __init__(self,outsize=(224,224)):
-        self.outsize = outsize
-
-    def __call__(self, img):
-        if self.outsize[0]>img.shape[0] or self.outsize[1]>img.shape[1]:
-            raise ValueError("RandomCrop.outsize larger than the input image")
-
-        return randomcrop(img, self.outsize)
-
 def noise(img, uintpara=16, Mean=0, Var=None):
     """add gaussian noise to the image
 
@@ -391,26 +283,6 @@ def noise(img, uintpara=16, Mean=0, Var=None):
 
     return img_new
 
-class RandomNoise(object):
-
-    def __init__(self,probability, uintpara=16, mean=0, var=None):
-        if not 0<= probability <=1 :
-            raise ValueError('AddNoise.probability error')
-        if not (uintpara ==8 or uintpara==16):
-            raise ValueError('RandomNoise.uintpara error')
-
-        self.uintpara=uintpara
-        self.probability = probability
-        self.mean = mean
-        self.var = var
-
-    def __call__(self, img):
-        r = round(random.uniform(0, 1), 1)
-        print(r, self.probability, self.mean, self.var)
-        if r < self.probability:
-            return noise(img, self.uintpara, self.mean, self.var)
-        else:
-            return img
 
 def gaussianblur(img, sigma=1, multichannel=True):
     """Multi-dimensional Gaussian filter.
@@ -444,24 +316,6 @@ def gaussianblur(img, sigma=1, multichannel=True):
     img_new = img_new.astype(type)
     return img_new
 
-
-class GaussianBlur(object):
-    def __init__(self, probability, sigma=1, multichannel=True):
-        if not 0<= probability <=1 :
-            raise ValueError('GaussianBlur.probability error')
-        if sigma<0:
-            raise ValueError('GaussianBlur.sigma error')
-        self.probability = probability
-        self.sigma = sigma
-        self.multichannel=multichannel
-
-    def __call__(self, img):
-        r = round(random.uniform(0, 1), 1)
-        print(r, self.probability)
-        if r < self.probability:
-            return gaussianblur(img, self.sigma, self.multichannel)
-        else:
-            return img
 
 def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10,order=1):
     """2D piecewise affine transformation.
@@ -539,7 +393,166 @@ def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down
     return img_new
 
 
-class PieceTransfor(object):
+# ==================================class for classification=======================================
+
+class Flip(object):
+    """
+    flip the input ndarray image
+    three case:
+        1. left to right
+        2. top to bottom
+        2. left to right and then top to bottom
+    """
+
+    def __init__(self, flip_mode):
+        assert isinstance(flip_mode, int)
+        self.flip_mode = flip_mode
+    
+    def __call__(self, img):
+        
+        return flip(img, self.flip_mode)
+
+class RandomFlip(object):
+    """
+    random flip the ndarray image
+    random probability (default init):
+        1. original: 0.25
+        2. left to right: 0.25
+        3. top to bottom: 0.25
+        4. left to right and then top to bottom: 0.25
+    """
+
+    # def __init__(self, u=0.25):
+    #     self.u = 0.25
+    def __call__(self, img):
+        flip_mode = random.randint(-1, 2)
+        if flip_mode == 2:
+            return img
+        else:
+            return flip(img, flip_mode)
+
+
+class RandomRotate(object):
+    """rotate the image.
+
+        Args:
+            probability:the probability of the operation
+        Example:
+            >>> transform_multi.Randomrotate()
+
+    """
+
+    def __init__(self, probability=0.5):
+
+        if not 0 <= probability <= 1:
+            raise ValueError('Randomrotate.probability error')
+        self.probability = probability
+
+    def __call__(self, img):
+        angle = random.randint(0, 360)
+        r = round(random.uniform(0, 1), 1)
+        if r < self.probability:
+            return rotate(img, angle)
+        else:
+            return img
+
+
+class RandomShift(object):
+    """shift the image.
+
+        Args:
+            probability:the probability of the operation (0<double<=1)
+            rightshift: the scale of the shift right (pixels)
+            downshift:the scale of the shift down (pixels)
+        Example:
+            >>> transform_multi.RandomShift(probability=1, rightshift=10, downshift=10)
+
+    """
+
+    def __init__(self, probability=0.5, rightshift=5, downshift=5):
+        if not 0 <= probability <= 1 :
+            raise ValueError("RandomShift.probability is error")
+        if not isinstance(rightshift,int):
+            raise ValueError("RandomShift.rightshift is error")
+        if not isinstance(downshift,int):
+            raise ValueError("RandomShift.downshift is error")
+
+        self.probability = probability
+        self.rightshift = rightshift
+        self.downshift = downshift
+
+    def __call__(self, img):
+        r = round(random.uniform(0,1),1)
+        # print(r, self.probability, self.rightshift, self.downshift)
+        if r < self.probability:
+            rightshift=random.randint(0,self.rightshift)
+            downshift = random.randint(0, self.downshift)
+            return shift(img, rightshift=rightshift, downshift=downshift)
+        else:
+            return img
+
+class RandomCrop(object):
+    """shift the image.
+
+        Args:
+            outsize: the shape of the croped image
+        Example:
+            >>> transform_multi.RandomCrop(1, (256,256))
+
+    """
+    def __init__(self,outsize=(224,224)):
+        self.outsize = outsize
+
+    def __call__(self, img):
+        if self.outsize[0]>img.shape[0] or self.outsize[1]>img.shape[1]:
+            raise ValueError("RandomCrop.outsize larger than the input image")
+
+        return randomcrop(img, self.outsize)
+
+
+class RandomNoise(object):
+
+    def __init__(self,probability, uintpara=16, mean=0, var=None):
+        if not 0<= probability <=1 :
+            raise ValueError('AddNoise.probability error')
+        if not (uintpara ==8 or uintpara==16):
+            raise ValueError('RandomNoise.uintpara error')
+
+        self.uintpara=uintpara
+        self.probability = probability
+        self.mean = mean
+        self.var = var
+
+    def __call__(self, img):
+        r = round(random.uniform(0, 1), 1)
+        print(r, self.probability, self.mean, self.var)
+        if r < self.probability:
+            return noise(img, self.uintpara, self.mean, self.var)
+        else:
+            return img
+
+
+class GaussianBlur(object):
+    def __init__(self, probability, sigma=1, multichannel=True):
+        if not 0<= probability <=1 :
+            raise ValueError('GaussianBlur.probability error')
+        if sigma<0:
+            raise ValueError('GaussianBlur.sigma error')
+        self.probability = probability
+        self.sigma = sigma
+        self.multichannel=multichannel
+
+    def __call__(self, img):
+        r = round(random.uniform(0, 1), 1)
+        print(r, self.probability)
+        if r < self.probability:
+            return gaussianblur(img, self.sigma, self.multichannel)
+        else:
+            return img
+
+
+
+class PieceTransform(object):
     def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
         if not 0<= probability <=1 :
             raise ValueError('PieceTransfor.probability error')
@@ -567,7 +580,26 @@ class PieceTransfor(object):
             return img
 
 
-##======================= semantic segmentation =============================================
+class ToTensor(object):
+    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
+
+    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
+    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
+    """
+
+    def __call__(self, pic):
+        """
+        Args:
+            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+
+        Returns:
+            Tensor: Converted image.
+        """
+        return to_tensor(pic)
+
+##======================= semantic segmentation transform =============================================
+# operate on input image and target(label) image
+
 class SegRandomRotate(object):
     def __init__(self, probability=0.5):
 
@@ -588,7 +620,9 @@ class SegRandomRotate(object):
         else:
             return img, target
 
+
 class SegRandomShift(object):
+
     def __init__(self, probability=0.5, rightshift=5, downshift=5):
         if not 0 <= probability <= 1:
             raise ValueError("SegRandomShift.probability is error")
@@ -601,9 +635,7 @@ class SegRandomShift(object):
         self.rightshift = rightshift
         self.downshift = downshift
 
-    def __call__(self, img,target):
-        # if target==None:
-        #     raise ValueError('SegRandomShift has no target parameters ')
+    def __call__(self, img, target):
         r = round(random.uniform(0, 1), 1)
         if r < self.probability:
             rightshift = random.randint(0, self.rightshift)
@@ -614,13 +646,12 @@ class SegRandomShift(object):
         else:
             return img, target
 
+
 class SegRandomCrop(object):
     def __init__(self, outsize=(224, 224)):
         self.outsize = outsize
 
     def __call__(self, img, target):
-        # if target==None:
-        #     raise ValueError('SegRandomCrop has no target parameters ')
         if self.outsize[0] > img.shape[0] or self.outsize[1] > img.shape[1]:
             raise ValueError("SegRandomCrop.outsize larger than the input image")
 
@@ -642,16 +673,13 @@ class SegRandomNoise(object):
         self.var = var
 
     def __call__(self, img, target):
-        # if target==None:
-        #     raise ValueError('SegRandomNoise has no target parameters ')
         r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability, self.mean, self.var)
         if r < self.probability:
             img_trans = noise(img, self.uintpara, self.mean, self.var)
-
             return img_trans, target
         else:
             return img, target
+
 
 class SegGaussianBlur(object):
     def __init__(self, probability, sigma=1, multichannel=True):
@@ -664,17 +692,16 @@ class SegGaussianBlur(object):
         self.multichannel = multichannel
 
     def __call__(self, img, target):
-        # if target==None:
-        #     raise ValueError('SegGaussianBlur has no target parameters ')
         r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability)
         if r < self.probability:
             img_trans = gaussianblur(img, self.sigma, self.multichannel)
             return img_trans, target
         else:
             return img, target
 
+
 class SegPieceTransfor(object):
+
     def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
         if not 0 <= probability <= 1:
             raise ValueError('SegPieceTransfor.probability error')
@@ -694,26 +721,13 @@ class SegPieceTransfor(object):
         self.warp_up_down = warp_up_down
 
     def __call__(self, img, target):
-        # if target==None:
-        #     raise ValueError('SegPieceTransfor has no target parameters ')
         r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability)
         if r < self.probability:
             img_trans = piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
             target_trans = piecetransform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down,order=0)
             return img_trans,target_trans
         else:
             return img, target
-
-def SegFlip(img, flip_mode):
-    """
-    flip the input ndarray image
-    three case:
-        1. left to right
-        2. top to bottom
-        2. left to right and then top to bottom
-    """
-    return flip(img, flip_mode)
 
 class SegRandomFlip(object):
     """
@@ -736,8 +750,95 @@ class SegRandomFlip(object):
             return flip(img, flip_mode), flip(target, flip_mode)
 
 
+class SegToTensor(object):
+    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor for segmantation.
 
-# ====================================================================================================
+    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
+    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
+    """
+
+    def __call__(self, img, target):
+        """
+        Args:
+            img (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+            target (numpy.ndarray): convert target to tensor
+
+        Returns:
+            Tensor: Converted image.
+        """
+        return to_tensor(img), target
+
+# ======================================== common use class ============================================================
+
+class Compose(object):
+    """Composes several transforms together.
+
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+
+    Example:
+        >>> transforms.Compose([
+        >>>     transforms.CenterCrop(10),
+        >>>     transforms.ToTensor(),
+        >>> ])
+    """
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img):
+        for t in self.transforms:
+            img = t(img)
+        return img
+
+class SegCompose(object):
+    """Composes several transforms together for segmantation.
+
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+
+    """
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img, target):
+        for t in self.transforms:
+            img, target = t(img, target)
+        return img, target
+
+
+class Lambda(object):
+    """Apply a user-defined lambda as a transform.
+
+    Args:
+        lambd (function): Lambda/function to be used for transform.
+    """
+
+    def __init__(self, lambd):
+        assert isinstance(lambd, types.LambdaType)
+        self.lambd = lambd
+
+    def __call__(self, img):
+        return self.lambd(img)
+
+
+class SegLambda(object):
+    """Apply a user-defined lambda as a transform.
+
+    Args:
+        lambd (function): Lambda/function to be used for transform.
+    """
+
+    def __init__(self, lambd):
+        assert isinstance(lambd, types.LambdaType)
+        self.lambd = lambd
+
+    def __call__(self, img, target):
+        return self.lambd(img), target
+
+    
+# ======================================== to delete ============================================================
 
 class Scale(object):
     """Rescale the input PIL.Image to the given size.
@@ -824,79 +925,6 @@ def hflip(img):
 
     return img.transpose(Image.FLIP_LEFT_RIGHT)
 
-
-class Compose(object):
-    """Composes several transforms together.
-
-    Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
-
-    Example:
-        >>> transforms.Compose([
-        >>>     transforms.CenterCrop(10),
-        >>>     transforms.ToTensor(),
-        >>> ])
-    """
-
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, img):
-        for t in self.transforms:
-            img = t(img)
-        return img
-
-class SegCompose(object):
-    """Composes several transforms together.
-
-    Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
-
-    """
-
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, img, target):
-        for t in self.transforms:
-            img, target = t(img, target)
-        return img, target
-
-
-
-class ToTensor(object):
-    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
-
-    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
-    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
-    """
-
-    def __call__(self, pic):
-        """
-        Args:
-            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
-
-        Returns:
-            Tensor: Converted image.
-        """
-        return to_tensor(pic)
-
-class SegToTensor(object):
-    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
-
-    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
-    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
-    """
-
-    def __call__(self, img, target):
-        """
-        Args:
-            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
-
-        Returns:
-            Tensor: Converted image.
-        """
-        return to_tensor(img), target
 
 # class ToPILImage(object):
 #     """Convert a tensor to PIL Image.
@@ -1041,31 +1069,3 @@ class Pad(object):
         """
         return pad(img, self.padding, self.fill)
 
-
-class Lambda(object):
-    """Apply a user-defined lambda as a transform.
-
-    Args:
-        lambd (function): Lambda/function to be used for transform.
-    """
-
-    def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
-        self.lambd = lambd
-
-    def __call__(self, img):
-        return self.lambd(img)
-
-class SegLambda(object):
-    """Apply a user-defined lambda as a transform.
-
-    Args:
-        lambd (function): Lambda/function to be used for transform.
-    """
-
-    def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
-        self.lambd = lambd
-
-    def __call__(self, img, target):
-        return self.lambd(img), target
