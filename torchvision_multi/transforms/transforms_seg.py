@@ -216,44 +216,32 @@ class SegPad(object):
 here = None
 
 class SegRandomNoise(object):
+    """Noise
+    if dtype is uint8,  var should be 0.01 is best.
+    if dtype is uint16, var should be 0.001 is best
+    """
 
-    def __init__(self, probability, uintpara=16, mean=0, var=None):
-        if not 0 <= probability <= 1:
-            raise ValueError('SegRandomNoise.probability error')
-        if not (uintpara == 8 or uintpara == 16):
-            raise ValueError('SegRandomNoise.uintpara error')
-
-        self.uintpara = uintpara
-        self.probability = probability
-        self.mean = mean
+    def __init__(self, dtype='uint8', mode='gaussian', var=0.01):
+        if dtype not in ('uint8', 'uint16'):
+            raise ValueError('not support data type')
+        self.dtype = dtype
+        self.mode = mode
         self.var = var
 
     def __call__(self, img, target):
-        r = round(random.uniform(0, 1), 1)
-        if r < self.probability:
-            img_trans = noise(img, self.uintpara, self.mean, self.var)
-            return img_trans, target
-        else:
-            return img, target
+        return F.noise(img, dtype=self.dtype, mode=self.mode, var=self.var), target
 
 
 class SegGaussianBlur(object):
-    def __init__(self, probability, sigma=1, multichannel=True):
-        if not 0 <= probability <= 1:
-            raise ValueError('SegGaussianBlur.probability error')
-        if sigma < 0:
-            raise ValueError('SegGaussianBlur.sigma error')
-        self.probability = probability
+    def __init__(self, sigma=1, multichannel=True):
+        if sigma<0:
+            raise ValueError('GaussianBlur.sigma error')
         self.sigma = sigma
-        self.multichannel = multichannel
+        self.multichannel=multichannel
 
     def __call__(self, img, target):
-        r = round(random.uniform(0, 1), 1)
-        if r < self.probability:
-            img_trans = gaussianblur(img, self.sigma, self.multichannel)
-            return img_trans, target
-        else:
-            return img, target
+        return F.gaussian_blur(img, self.sigma, self.multichannel), target
+
 
 
 class SegPieceTransfor(object):

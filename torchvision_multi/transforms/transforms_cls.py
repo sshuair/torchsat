@@ -198,7 +198,6 @@ class Resize(object):
         return F.center_crop(img, self.size)
 
 
-
 class Pad(object):
     
     def __init__(self, pad_width, mode='reflect'):
@@ -211,46 +210,32 @@ class Pad(object):
         return F.pad(img, self.pad_width, self.mode)
 
 
+class Noise(object):
+    """Noise
+    if dtype is uint8,  var should be 0.01 is best.
+    if dtype is uint16, var should be 0.001 is best
+    """
 
-class RandomNoise(object):
-
-    def __init__(self,probability, uintpara=16, mean=0, var=None):
-        if not 0<= probability <=1 :
-            raise ValueError('AddNoise.probability error')
-        if not (uintpara ==8 or uintpara==16):
-            raise ValueError('RandomNoise.uintpara error')
-
-        self.uintpara=uintpara
-        self.probability = probability
-        self.mean = mean
+    def __init__(self, dtype='uint8', mode='gaussian', var=0.01):
+        if dtype not in ('uint8', 'uint16'):
+            raise ValueError('not support data type')
+        self.dtype = dtype
+        self.mode = mode
         self.var = var
 
     def __call__(self, img):
-        r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability, self.mean, self.var)
-        if r < self.probability:
-            return F.noise(img, self.uintpara, self.mean, self.var)
-        else:
-            return img
+        return F.noise(img, dtype=self.dtype, mode=self.mode, var=self.var)
 
 
 class GaussianBlur(object):
-    def __init__(self, probability, sigma=1, multichannel=True):
-        if not 0<= probability <=1 :
-            raise ValueError('GaussianBlur.probability error')
+    def __init__(self, sigma=1, multichannel=True):
         if sigma<0:
             raise ValueError('GaussianBlur.sigma error')
-        self.probability = probability
         self.sigma = sigma
         self.multichannel=multichannel
 
     def __call__(self, img):
-        r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability)
-        if r < self.probability:
-            return F.gaussianblur(img, self.sigma, self.multichannel)
-        else:
-            return img
+        return F.gaussianblur(img, self.sigma, self.multichannel)
 
 
 
