@@ -9,6 +9,88 @@ import collections
 from . import functional as F
 
 
+class Compose(object):
+    """Composes several transforms together.
+
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+
+    Example:
+        >>> transforms.Compose([
+        >>>     transforms.CenterCrop(10),
+        >>>     transforms.ToTensor(),
+        >>> ])
+    """
+
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img):
+        for t in self.transforms:
+            img = t(img)
+        return img
+
+
+class Lambda(object):
+    """Apply a user-defined lambda as a transform.
+
+    Args:
+        lambd (function): Lambda/function to be used for transform.
+    """
+
+    def __init__(self, lambd):
+        assert isinstance(lambd, types.LambdaType)
+        self.lambd = lambd
+
+    def __call__(self, img):
+        return self.lambd(img)
+
+class ToTensor(object):
+    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
+
+    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
+    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
+    """
+
+    def __call__(self, pic):
+        """
+        Args:
+            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+
+        Returns:
+            Tensor: Converted image.
+        """
+        return F.to_tensor(pic)
+
+
+class Normalize(object):
+    """Normalize an tensor image with mean and standard deviation.
+
+    Given mean: (R, G, B) and std: (R, G, B),
+    will normalize each channel of the torch.*Tensor, i.e.
+    channel = (channel - mean) / std
+
+    Args:
+        mean (sequence): Sequence of means for R, G, B channels respecitvely.
+        std (sequence): Sequence of standard deviations for R, G, B channels
+            respecitvely.
+    """
+
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+
+        Returns:
+            Tensor: Normalized image.
+        """
+        return normalize(tensor, self.mean, self.std)
+
+
 class Flip(object):
     """
     flip the input ndarray image
@@ -145,14 +227,13 @@ class RandomCrop(object):
     def __call__(self, img):
         width, height = self.crop_size
 
-        top = random.randint(0, int(img.shape[0] - width + 1))
-        left = random.randint(0, int(img.shape[1] - height + 1))
+        top = random.randint(0, int(img.shape[0] - width))
+        left = random.randint(0, int(img.shape[1] - height))
 
         if (width > img.shape[0] or height > img.shape[1]):
             raise ValueError("the output imgage size should be small than input image!!!")
 
         return F.crop(img, top, left, width, height)
-
 
 
 class CenterCrop(object):
@@ -195,7 +276,7 @@ class Resize(object):
             self.size = size
         
     def __call__(self, img):
-        return F.center_crop(img, self.size)
+        return F.resize(img, self.size)
 
 
 class Pad(object):
@@ -211,7 +292,7 @@ class Pad(object):
 
 
 class Noise(object):
-    """Noise
+    """TODO
     if dtype is uint8,  var should be 0.01 is best.
     if dtype is uint16, var should be 0.001 is best
     """
@@ -228,21 +309,19 @@ class Noise(object):
 
 
 class GaussianBlur(object):
-    def __init__(self, sigma=1, multichannel=True):
+    def __init__(self, sigma=1, dtype='uint8', multichannel=True):
         if sigma<0:
             raise ValueError('GaussianBlur.sigma error')
         self.sigma = sigma
+        self.dtype = dtype
         self.multichannel=multichannel
 
     def __call__(self, img):
-        return F.gaussianblur(img, self.sigma, self.multichannel)
-
+        return F.gaussian_blur(img, self.sigma, self.dtype, self.multichannel)
 
 
 class PieceTransform(object):
-    def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
-        if not 0<= probability <=1 :
-            raise ValueError('PieceTransfor.probability error')
+    def __init__(self, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
         if numcols<0 :
             raise ValueError('PieceTransfor.numcols error')
         if numrows<0 :
@@ -252,18 +331,11 @@ class PieceTransform(object):
         if warp_up_down<0 :
             raise ValueError('PieceTransfor.warp_up_down error')
 
-        self.probability = probability
         self.numcols = numcols
         self.numrows = numrows
         self.warp_left_right = warp_left_right
         self.warp_up_down = warp_up_down
 
     def __call__(self, img):
-        r = round(random.uniform(0, 1), 1)
-        # print(r, self.probability)
-        if r < self.probability:
-            return F.piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
-        else:
-            return img
-
+        return F.piecewise_transform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
 

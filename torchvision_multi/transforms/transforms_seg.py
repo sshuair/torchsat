@@ -3,25 +3,8 @@
 """
 import random
 from PIL import Image
+import torch
 from . import functional as F
-
-
-class ToTensor(object):
-    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor.
-
-    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
-    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
-    """
-
-    def __call__(self, pic):
-        """
-        Args:
-            pic (PIL.Image or numpy.ndarray): Image to be converted to tensor.
-
-        Returns:
-            Tensor: Converted image.
-        """
-        return F.to_tensor(pic)
 
 class SegCompose(object):
     """Composes several transforms together for segmantation.
@@ -38,6 +21,70 @@ class SegCompose(object):
         for t in self.transforms:
             img, target = t(img, target)
         return img, target
+
+
+class SegLambda(object):
+    """Apply a user-defined lambda as a transform.
+
+    Args:
+        lambd (function): Lambda/function to be used for transform.
+    """
+
+    def __init__(self, lambd):
+        assert isinstance(lambd, types.LambdaType)
+        self.lambd = lambd
+
+    def __call__(self, img, target):
+        return self.lambd(img), target
+
+    
+class SegToTensor(object):
+    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor for segmantation.
+
+    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
+    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
+    """
+
+    def __call__(self, img, target):
+        """
+        Args:
+            img (PIL.Image or numpy.ndarray): Image to be converted to tensor.
+            target (numpy.ndarray): convert target to long tensor
+
+        Returns:
+            Tensor: Converted image.
+        """
+
+        return F.to_tensor(img), torch.from_numpy(target).long()
+
+
+class SegNormalize(object):
+    """Normalize an tensor image with mean and standard deviation.
+
+    Given mean: (R, G, B) and std: (R, G, B),
+    will normalize each channel of the torch.*Tensor, i.e.
+    channel = (channel - mean) / std
+
+    Args:
+        mean (sequence): Sequence of means for R, G, B channels respecitvely.
+        std (sequence): Sequence of standard deviations for R, G, B channels
+            respecitvely.
+    """
+
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor, target):
+        """
+        Args:
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+
+        Returns:
+            Tensor: Normalized image.
+        """
+        return normalize(tensor, self.mean, self.std), target
+
 
 class SegVFlip(object):
     """
@@ -148,8 +195,8 @@ class SegRandomCrop(object):
     def __call__(self, img, target):
         width, height = self.crop_size
 
-        top = random.randint(0, int(img.shape[0] - width + 1))
-        left = random.randint(0, int(img.shape[1] - height + 1))
+        top = random.randint(0, int(img.shape[0] - width))
+        left = random.randint(0, int(img.shape[1] - height))
 
         if (width > img.shape[0] or height > img.shape[1]):
             raise ValueError("the output imgage size should be small than input image!!!")
@@ -233,22 +280,20 @@ class SegRandomNoise(object):
 
 
 class SegGaussianBlur(object):
-    def __init__(self, sigma=1, multichannel=True):
+    def __init__(self, sigma=1, dtype='uint8', multichannel=True):
         if sigma<0:
             raise ValueError('GaussianBlur.sigma error')
         self.sigma = sigma
+        self.dtype = dtype
         self.multichannel=multichannel
 
     def __call__(self, img, target):
-        return F.gaussian_blur(img, self.sigma, self.multichannel), target
+        return F.gaussian_blur(img, self.sigma, self.dtype self.multichannel), target
 
 
 
 class SegPieceTransfor(object):
-
-    def __init__(self, probability, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
-        if not 0 <= probability <= 1:
-            raise ValueError('SegPieceTransfor.probability error')
+    def __init__(self, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
         if numcols < 0:
             raise ValueError('SegPieceTransfor.numcols error')
         if numrows < 0:
@@ -258,20 +303,16 @@ class SegPieceTransfor(object):
         if warp_up_down < 0:
             raise ValueError('SegPieceTransfor.warp_up_down error')
 
-        self.probability = probability
         self.numcols = numcols
         self.numrows = numrows
         self.warp_left_right = warp_left_right
         self.warp_up_down = warp_up_down
 
     def __call__(self, img, target):
-        r = round(random.uniform(0, 1), 1)
-        if r < self.probability:
-            img_trans = piecetransform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
-            target_trans = piecetransform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down,order=0)
-            return img_trans,target_trans
-        else:
-            return img, target
+        img_trans = F.piecewise_transform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+        target_trans = F.piecewise_transform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down,order=0)
+        return img_trans,target_trans
+
 
 
 class SegToTensor(object):
