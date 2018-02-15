@@ -227,10 +227,10 @@ class RandomCrop(object):
     def __call__(self, img):
         width, height = self.crop_size
 
-        top = random.randint(0, int(img.shape[0] - width))
-        left = random.randint(0, int(img.shape[1] - height))
+        left = random.randint(0, int(img.shape[1] - width))
+        top = random.randint(0, int(img.shape[0] - height))
 
-        if (width > img.shape[0] or height > img.shape[1]):
+        if (width > img.shape[1] or height > img.shape[0]):
             raise ValueError("the output imgage size should be small than input image!!!")
 
         return F.crop(img, top, left, width, height)

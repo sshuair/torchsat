@@ -197,10 +197,10 @@ def crop(img, top, left, width, height):
     if (width > img.shape[0] or height > img.shape[1]):
         raise ValueError("the output imgage size should be small than input image!!!")
 
-    img_width, img_height, _ = img.shape
+    img_height, img_width, _ = img.shape
     right = img_width - (left + width)
     bottom = img_height - (top + height)
-    img_croped = util.crop(img,((left,right),(top,bottom),(0,0)))
+    img_croped = util.crop(img,((top,bottom),(left,right),(0,0)))
 
     return img_croped
 
@@ -243,8 +243,9 @@ def resize(img, size, interpolation=Image.BILINEAR):
     
     if img.dtype == np.int32:
         resized = img.astype(np.uint16)
-
-    resized = cv2.resize(resized, size , interpolation)
+        resized = cv2.resize(resized, size , interpolation)
+    else:
+        resized = cv2.resize(img, size , interpolation)
     resized = resized.astype(img.dtype)
     return resized
 
@@ -295,7 +296,7 @@ def noise(img, dtype='uint8', mode='gaussian', mean=0, var=0.01):
     img_new = util.random_noise(img, mode, mean=mean, var=var)
 
     if dtype == 'uint8':
-        img_new = util.img_as_ubyte(img_new)
+        img_new = (img_new * np.iinfo(np.uint8).max).astype(np.uint8)
     elif dtype == 'uint16':
         img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
     else:
@@ -332,7 +333,8 @@ def gaussian_blur(img, sigma=1, dtype='uint8', multichannel=False):
         raise ValueError("Sigma values less than zero are not valid")
     img_new = filters.gaussian(img, sigma, multichannel)
     if dtype == 'uint8':
-        img_new = util.img_as_ubyte(img_new)
+        print(img_new.max(), img_new.min())
+        img_new = (img_new * np.iinfo(np.uint8).max).astype(np.uint8)
     elif dtype == 'uint16':
         img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
     else:
