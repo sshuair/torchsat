@@ -15,27 +15,6 @@ from skimage.external import tifffile
 from skimage import transform, filters, util
 import cv2
 
-"""
-# 思路：
-0. transform中所有输入的img都应该是np.ndarray or torch.tenor
-1. 通用方法写成函数，其它的类调用这些函数，这样类和函数就可以同时使用
-2. 如果是分类问题，只需要处理input，那么直接像原来一样使用compose调用相应的class或者lamdba
-3. 如果是分割问题，需要同时操作input和target，那么user自己编写函数，生成相应的param去操作
-# support operation
-[ ]resize
-[ ]center_crop
-[x]random_crop
-[x]flip
-[ ]horizontal_flip
-[ ]vertical_flip
-[x]rotate
-[x]shift
-[ ]normaize
-[x]noise
-[ ]dropout
-[ ]pad
-"""
-
 
 def _is_pil_image(img):
     if accimage is not None:
@@ -59,7 +38,7 @@ def to_tensor(pic):
     if isinstance(pic, np.ndarray):
         # get max value of dtype, if the dtype is not uint8 and uint 16, change this
         # denominator = _get_dtype_max(pic)
-        denominator = np.iifo(np.uint8) if pic.dtype == np.uint8 else np.iinfo(np.uint16)
+        denominator = np.iinfo(np.uint8).max if pic.dtype == np.uint8 else np.iinfo(np.uint16).max
 
         # handle numpy array
         if len(pic.shape) == 2:
@@ -99,34 +78,25 @@ def to_tensor(pic):
         return
 
 
-def to_ndarray(pic):
+def to_ndarray(pic, dtype='uint8'):
     if not (_is_numpy_image(pic) or _is_tensor_image(pic)):
         raise TypeError('pic should be Tensor or ndarray. Got {}.'.format(type(pic)))
 
     npimg = pic
-    mode = None
     if isinstance(pic, torch.FloatTensor):
-        pic = pic.mul(255).byte()
-    if torch.is_tensor(pic):
+        if dtype == 'uint8':
+            npimg = util.img_as_ubyte(pic.numpy())
+        elif dtype == 'uint16':
+            npimg = util.img_as_uint(pic.numpy())
+        else:
+            raise ValueError('not support dtype')
+        npimg = np.transpose(npimg, (1, 2, 0))
+        
+    else:
         npimg = np.transpose(pic.numpy(), (1, 2, 0))
     assert isinstance(npimg, np.ndarray)
-    if npimg.shape[2] == 1:
-        npimg = npimg[:, :, 0]
 
-        if npimg.dtype == np.uint8:
-            mode = 'L'
-        if npimg.dtype == np.int16:
-            mode = 'I;16'
-        if npimg.dtype == np.int32:
-            mode = 'I'
-        elif npimg.dtype == np.float32:
-            mode = 'F'
-    else:
-        if npimg.dtype == np.uint8:
-            mode = 'RGB'
-    assert mode is not None, '{} is not supported'.format(npimg.dtype)
     return npimg
-    # return Image.fromarray(npimg, mode=mode)
 
 
 def normalize(tensor, mean, std):
@@ -181,7 +151,7 @@ def rotate(img, angle=0, order=1):
 
     if not _is_numpy_image(img):
         raise TypeError('img should be numpy ndarray. Got {}'.format(type(img)))
-    if not (isinstance(angle, int)):
+    if not (isinstance(angle, numbers.Number)):
         raise TypeError('Angle should be integer. Got {}'.format(type(angle)))
 
     img_new = transform.rotate(img, angle, order=order, preserve_range=True)
@@ -238,7 +208,7 @@ def crop(img, top, left, width, height):
 def center_crop(img, output_size):
     if isinstance(output_size, numbers.Number):
         output_size = (int(output_size), int(output_size))
-    w, h = img.shape
+    w, h, _ = img.shape
     th, tw = output_size
     i = int(round((h - th) / 2.))
     j = int(round((w - tw) / 2.))
@@ -248,7 +218,7 @@ def center_crop(img, output_size):
 
 def resize(img, size, interpolation=Image.BILINEAR):
     """Resize the input PIL Image to the given size.
-
+    Note: cv2.resize do not support int32, weird
     Args:
         img (Numpy Array): Image to be resized.
         size (sequence or int): Desired output size. If size is a sequence like
@@ -262,6 +232,7 @@ def resize(img, size, interpolation=Image.BILINEAR):
     Returns:
         PIL Image: Resized image.
     """
+
     if not _is_numpy_image(img):
         raise TypeError('img should be PIL Image. Got {}'.format(type(img)))
     if not (isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)):
@@ -269,8 +240,13 @@ def resize(img, size, interpolation=Image.BILINEAR):
 
     if isinstance(size, int):
         size = (size, size)
+    
+    if img.dtype == np.int32:
+        resized = img.astype(np.uint16)
 
-    return cv2.resize(img, (size[0], size[1]), interpolation)
+    resized = cv2.resize(resized, size , interpolation)
+    resized = resized.astype(img.dtype)
+    return resized
 
 
 def crop_resize(img, top, left, width, height, size, interpolation=Image.BILINEAR):
@@ -311,30 +287,24 @@ def pad(img, pad_width, mode='reflect', **kwargs):
 
 
 def noise(img, dtype='uint8', mode='gaussian', mean=0, var=0.01):
-    """add gaussian noise to the image
-
-        Parameters
-        ----------
-        img : ndarray
-
-        Returns
-        -------
-        Noised_image : ndarray
+    """TODO
     """
-
+    if dtype == 'uint16':
+        img_new = img.astype(np.uint16)
+                  
     img_new = util.random_noise(img, mode, mean=mean, var=var)
 
     if dtype == 'uint8':
         img_new = util.img_as_ubyte(img_new)
     elif dtype == 'uint16':
-        img_new = util.img_as_uint(img_new)
+        img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
     else:
         raise ValueError('not support type')
 
     return img_new
 
 
-def gaussian_blur(img, sigma=1, multichannel=True):
+def gaussian_blur(img, sigma=1, dtype='uint8', multichannel=False):
     """Multi-dimensional Gaussian filter.
 
     Parameters
@@ -360,15 +330,17 @@ def gaussian_blur(img, sigma=1, multichannel=True):
 
     if np.any(np.asarray(sigma) < 0.0):
         raise ValueError("Sigma values less than zero are not valid")
-
     img_new = filters.gaussian(img, sigma, multichannel)
-    img_new = img_new.astype(img.dtype)
+    if dtype == 'uint8':
+        img_new = util.img_as_ubyte(img_new)
+    elif dtype == 'uint16':
+        img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
+    else:
+        raise ValueError('not support type')
     return img_new
 
 
-
-
-def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10, order=1):
+def piecewise_transform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10, order=1):
     """2D piecewise affine transformation.
 
         Control points are used to define the mapping. The transform is based on
@@ -395,8 +367,6 @@ def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down
             >>> Transformed_img = piecetransform(image,numcols=10, numrows=10, warp_left_right=5, warp_up_down=5)
 
         """
-
-    type = image.dtype
 
     rows, cols = image.shape[0], image.shape[1]
 
@@ -432,13 +402,23 @@ def piecetransform(image, numcols=5, numrows=5, warp_left_right=10, warp_up_down
     # dst_cols_new = np.ndarray.transpose(dst_cols)
     # dst_new = np.dstack([dst_cols_new.flat, dst_rows_new.flat])[0]
 
-    out_rows = rows
-    out_cols = cols
-
     tform = transform.PiecewiseAffineTransform()
     tform.estimate(src, dst)
 
-    img_new = transform.warp(image, tform, output_shape=(out_rows, out_cols), order=order, preserve_range=True)
-
+    img_new = transform.warp(image, tform, output_shape=(rows, cols), order=order, preserve_range=True)
     img_new = img_new.astype(image.dtype)
+    
     return img_new
+
+
+
+if __name__ == '__main__':
+    img = tifffile.imread('sample-data/MUL_AOI_4_Shanghai_img1920.tif')
+    # tifffile.imshow(img[:,:,[3,2,1]])
+    img = img.astype(np.int32)
+    out = resize(img, (224,224))
+    # out = filters.gaussian_filter(img, sigma=2)
+    # out2 = gaussian_blur(img, dtype='uint16')
+    # out2 = to_tensor(out2)
+    # out3 = to_ndarray(out2, dtype='uint16')
+    # pass
