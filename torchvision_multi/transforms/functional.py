@@ -85,9 +85,9 @@ def to_ndarray(pic, dtype='uint8'):
     npimg = pic
     if isinstance(pic, torch.FloatTensor):
         if dtype == 'uint8':
-            npimg = util.img_as_ubyte(pic.numpy())
+            npimg = (pic.numpy() * np.iinfo(np.uint8).max).astype(np.uint8)
         elif dtype == 'uint16':
-            npimg = util.img_as_uint(pic.numpy())
+            npimg = (pic.numpy() * np.iinfo(np.int32).max).astype(np.int32)
         else:
             raise ValueError('not support dtype')
         npimg = np.transpose(npimg, (1, 2, 0))
@@ -197,10 +197,16 @@ def crop(img, top, left, width, height):
     if (width > img.shape[0] or height > img.shape[1]):
         raise ValueError("the output imgage size should be small than input image!!!")
 
-    img_height, img_width, _ = img.shape
+    if len(img.shape) == 2:
+        img_height, img_width = img.shape
+    else:
+        img_height, img_width, _ = img.shape
     right = img_width - (left + width)
     bottom = img_height - (top + height)
-    img_croped = util.crop(img,((top,bottom),(left,right),(0,0)))
+    if len(img.shape) == 2:
+        img_croped = util.crop(img,((top,bottom),(left,right)))
+    else:
+        img_croped = util.crop(img,((top,bottom),(left,right),(0,0)))
 
     return img_croped
 
@@ -208,7 +214,10 @@ def crop(img, top, left, width, height):
 def center_crop(img, output_size):
     if isinstance(output_size, numbers.Number):
         output_size = (int(output_size), int(output_size))
-    w, h, _ = img.shape
+    if len(img.shape) == 2:
+        h, w = img.shape
+    else:
+        h, w, _ = img.shape
     th, tw = output_size
     i = int(round((h - th) / 2.))
     j = int(round((w - tw) / 2.))
@@ -283,7 +292,11 @@ def pad(img, pad_width, mode='reflect', **kwargs):
         --------
         >>> Transformed_img = pad(img,[(20,20),(20,20),(0,0)],mode='reflect')
     """
-    pad_width = ((pad_width, pad_width), (pad_width, pad_width), (0, 0))
+    if len(img.shape) == 2:
+        pad_width = ((pad_width, pad_width), (pad_width, pad_width))
+    else:
+        pad_width = ((pad_width, pad_width), (pad_width, pad_width), (0, 0))
+    
     return np.pad(img, pad_width, mode)
 
 
@@ -298,7 +311,7 @@ def noise(img, dtype='uint8', mode='gaussian', mean=0, var=0.01):
     if dtype == 'uint8':
         img_new = (img_new * np.iinfo(np.uint8).max).astype(np.uint8)
     elif dtype == 'uint16':
-        img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
+        img_new = (img_new * np.iinfo(np.int32).max).astype(np.int32)
     else:
         raise ValueError('not support type')
 
@@ -336,7 +349,7 @@ def gaussian_blur(img, sigma=1, dtype='uint8', multichannel=False):
         print(img_new.max(), img_new.min())
         img_new = (img_new * np.iinfo(np.uint8).max).astype(np.uint8)
     elif dtype == 'uint16':
-        img_new = (img_new * np.iinfo(np.uint32).max).astype(np.int32)
+        img_new = (img_new * np.iinfo(np.int32).max).astype(np.int32)
     else:
         raise ValueError('not support type')
     return img_new

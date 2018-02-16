@@ -2,6 +2,7 @@
 """transforms for semantic segmentation on input image and target(label) image.
 """
 import random
+import numbers
 from PIL import Image
 import torch
 from . import functional as F
@@ -83,7 +84,7 @@ class SegNormalize(object):
         Returns:
             Tensor: Normalized image.
         """
-        return normalize(tensor, self.mean, self.std), target
+        return F.normalize(tensor, self.mean, self.std), target
 
 
 class SegVFlip(object):
@@ -129,12 +130,17 @@ class SegRandomFlip(object):
 
 class SegRandomRotate(object):
     def __init__(self, degrees):
-        if len(degrees) != 2:
-            raise ValueError("If degrees is a sequence, it must be of len 2.")
-        self.degrees = degrees
+        if isinstance(degrees, numbers.Number):
+            if degrees < 0:
+                raise ValueError("If degrees is a single number, it must be positive.")
+            self.degrees = (-degrees, degrees)
+        else:
+            if len(degrees) != 2:
+                raise ValueError("If degrees is a sequence, it must be of len 2.")
+            self.degrees = degrees
 
     def __call__(self, img, target):
-        angle = np.random.uniform(self.degrees[0], self.degrees[1])
+        angle = random.uniform(self.degrees[0], self.degrees[1])
         return F.rotate(img, angle), F.rotate(target, angle, order=0)
 
 
@@ -166,7 +172,7 @@ class SegRandomShift(object):
         down_shift = random.randint(self.shift_dist[0], self.shift_dist[1])
 
         img = F.shift(img, right_shift=right_shift, down_shift=down_shift)
-        target = F.shift(img, right_shift=right_shift, down_shift=down_shift)
+        target = F.shift(target, right_shift=right_shift, down_shift=down_shift)
         
         return img, target
 
@@ -260,8 +266,6 @@ class SegPad(object):
         return F.pad(img, self.pad_width, self.mode), F.pad(target, self.pad_width, self.mode), 
 
 
-here = None
-
 class SegRandomNoise(object):
     """Noise
     if dtype is uint8,  var should be 0.01 is best.
@@ -288,8 +292,7 @@ class SegGaussianBlur(object):
         self.multichannel=multichannel
 
     def __call__(self, img, target):
-        return F.gaussian_blur(img, self.sigma, self.dtype self.multichannel), target
-
+        return F.gaussian_blur(img, self.sigma, self.dtype, self.multichannel), target
 
 
 class SegPieceTransfor(object):
@@ -332,60 +335,26 @@ class SegToTensor(object):
             Tensor: Converted image.
         """
 
-        return to_tensor(img), torch.from_numpy(target).long()
+        return F.to_tensor(img), torch.from_numpy(target).long()
 
 
-# ======================================== common use class ============================================================
+class SegPieceTransform(object):
+    def __init__(self, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10):
+        if numcols<0 :
+            raise ValueError('PieceTransfor.numcols error')
+        if numrows<0 :
+            raise ValueError('PieceTransfor.numrows error')
+        if warp_left_right<0 :
+            raise ValueError('PieceTransfor.warp_left_right error')
+        if warp_up_down<0 :
+            raise ValueError('PieceTransfor.warp_up_down error')
 
-class Compose(object):
-    """Composes several transforms together.
-
-    Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
-
-    Example:
-        >>> transforms.Compose([
-        >>>     transforms.CenterCrop(10),
-        >>>     transforms.ToTensor(),
-        >>> ])
-    """
-
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, img):
-        for t in self.transforms:
-            img = t(img)
-        return img
-
-
-
-
-class Lambda(object):
-    """Apply a user-defined lambda as a transform.
-
-    Args:
-        lambd (function): Lambda/function to be used for transform.
-    """
-
-    def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
-        self.lambd = lambd
-
-    def __call__(self, img):
-        return self.lambd(img)
-
-
-class SegLambda(object):
-    """Apply a user-defined lambda as a transform.
-
-    Args:
-        lambd (function): Lambda/function to be used for transform.
-    """
-
-    def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
-        self.lambd = lambd
+        self.numcols = numcols
+        self.numrows = numrows
+        self.warp_left_right = warp_left_right
+        self.warp_up_down = warp_up_down
 
     def __call__(self, img, target):
-        return self.lambd(img), target
+        img_transform = F.piecewise_transform(img, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+        target_transform = F.piecewise_transform(target, self.numcols, self.numrows, self.warp_left_right, self.warp_up_down)
+        return img_transform, target_transform

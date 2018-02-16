@@ -88,7 +88,7 @@ class Normalize(object):
         Returns:
             Tensor: Normalized image.
         """
-        return normalize(tensor, self.mean, self.std)
+        return F.normalize(tensor, self.mean, self.std)
 
 
 class Flip(object):
@@ -321,7 +321,7 @@ class GaussianBlur(object):
 
 
 class PieceTransform(object):
-    def __init__(self, numcols=10, numrows=10, warp_left_right=10, warp_up_down=10):
+    def __init__(self, numcols=5, numrows=5, warp_left_right=5, warp_up_down=5):
         if numcols<0 :
             raise ValueError('PieceTransfor.numcols error')
         if numrows<0 :
