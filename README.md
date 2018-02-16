@@ -1,11 +1,13 @@
 # vision-multi
-Datasets, Transforms of pytorch specific to multi channel image 
+
+PyTorch transforms and DataLoader for classification and semantic segmentation. It not only support three channels image, but also support multi-channel(>=4) images, especially 16-bit multi-channel **tiff file**
+
+
 
 in progress...
 
 ## TODO:
 1. transform for multi-channel image
-    - [x] flip
     - [ ] resize
     - [ ] center_crop
     - [x] random_crop
@@ -15,9 +17,8 @@ in progress...
     - [x] rotate
     - [x] shift
     - [x] normaize
-    - [ ] noise
+    - [x] noise
     - [ ] pad
-    - [ ] ....
 2. dataloader for multi-channel image, such as jpg, tiff, png....
     - [x] single-label classification
     - [x] multi-label classification
