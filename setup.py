@@ -33,7 +33,7 @@ with open('README.md') as f:
 setup(
     name='torchvision-enhance',
     version = version,
-    description = u'PyTorch data transforms and dataloader for classification and segmentation.',
+    description = u'Enhance torchvision for multi-channel images, 16-bit image, segmentation...',
     long_description = readme,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -43,7 +43,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: C',
         'Programming Language :: Cython',
-        'Programming Language :: Python :: 2.7',
+        # 'Programming Language :: Python :: 2.7',s
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
@@ -52,7 +52,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Topic :: Multimedia :: Graphics :: Graphics Conversion',
         'Topic :: Scientific/Engineering :: GIS'],
-    keywords='pytorch vision augmentation deep learning',
+    keywords=['pytorch', 'vision', 'augmentation', 'deep learning'],
     author='sshuair',
     author_email='sshuair@gmail.com',
     url='https://github.com/sshuair/torchvison-enhance',
