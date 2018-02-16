@@ -1,4 +1,4 @@
-# vision-multi
+# torchvision-enhance
 
 torchvision-enhance is used to enhance the offical PyTorch vision library torchvision. Here is the enhanced parts:
 - support multi-channel(> 4 channels, e.g. 8 channels) images
