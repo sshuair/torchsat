@@ -32,11 +32,11 @@ def test_jpg():
         transforms_cls.PieceTransform(),
     #     transforms_cls.Lambda(lambda x: functional.to_tensor(x))
         transforms_cls.ToTensor(),
-        transforms_cls.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5)),
+        # transforms_cls.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5)),
         ])
 
     trainset = image_loader.SingleLabelImageLoader(
-        root='sample-data/', lstpath='sample-data/classification_jpg.lst',
+        rootdir='sample-data/', lstpath='sample-data/classification_jpg.lst',
         filetype='jpg', transform=transform,
         )
     trainloader = DataLoader(dataset=trainset,batch_size=batch_size,shuffle=False)
@@ -59,7 +59,7 @@ def test_jpg():
             print(type(img_ndarr), img_ndarr.size)
             # tifffile.imshow(img_ndarr[:,:,[3,2,1]], figure=fig, subplot=subplot)  
             tifffile.imshow(img_ndarr, figure=fig, subplot=subplot)  
-        plt.savefig('sample-data/transform_result/jpg_{}.png'.format(step), bbox_inches='tight')
+        plt.savefig('sample-data/transform_result/cls_jpg_{}.png'.format(step), bbox_inches='tight')
         print('\n')
 
 def test_tif():
@@ -86,7 +86,7 @@ def test_tif():
         ])
 
     trainset = image_loader.SingleLabelImageLoader(
-        root='sample-data/', lstpath='sample-data/classification_tiff.lst',
+        rootdir='sample-data/', lstpath='sample-data/classification_tiff.lst',
         filetype='tif', transform=transform,
         )
     trainloader = DataLoader(dataset=trainset,batch_size=batch_size,shuffle=False)
@@ -109,7 +109,7 @@ def test_tif():
             print(type(img_ndarr), img_ndarr.size)
             tifffile.imshow(img_ndarr[:,:,[3,2,1]], figure=fig, subplot=subplot)  
             # tifffile.imshow(img_ndarr, figure=fig, subplot=subplot)  
-        plt.savefig('sample-data/transform_result/tif_{}.png'.format(step), bbox_inches='tight')
+        plt.savefig('sample-data/transform_result/cls_tif_{}.png'.format(step), bbox_inches='tight')
         print('\n')
 
 if __name__ == '__main__':
