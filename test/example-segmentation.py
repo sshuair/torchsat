@@ -9,8 +9,8 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import transform, filters, util
-from torchvision_multi.datasets import image_loader
-from torchvision_multi.transforms import transforms_seg,functional
+from torchvision_x.datasets import image_loader
+from torchvision_x.transforms import transforms_seg,functional
 from test import palette
 
 def test_jpg():
