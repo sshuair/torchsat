@@ -170,7 +170,7 @@ class SemanticSegmentationLoader(Dataset):
     the input transform will work for input image and target image both
     """
 
-    def __init__(self, rootdir, lstpath, filetype='jpg', sep='\t', transform=None, target_transform=None, loader=_image_loader):
+    def __init__(self, rootdir, lstpath, filetype=['jpg', 'png'], sep='\t', transform=None, target_transform=None, loader=_image_loader):
         images_path = parse_segmentation_lstfile(rootdir, lstpath, sep=sep)
         if len(images_path) == 0:
             raise(RuntimeError("Found 0 images in subfolders of: " + rootdir + "\n"
@@ -185,8 +185,8 @@ class SemanticSegmentationLoader(Dataset):
 
     def __getitem__(self, index):
         image, target = self.images_path[index]
-        image = self.loader(image, self.filetype)
-        target = self.loader(target, 'png')
+        image = self.loader(image, self.filetype[0])
+        target = self.loader(target, self.filetype[1])
 
         if self.transform is not None:
             image, target = self.transform(image, target)
