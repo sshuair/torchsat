@@ -317,27 +317,6 @@ class SegPieceTransfor(object):
         return img_trans,target_trans
 
 
-
-class SegToTensor(object):
-    """Convert a ``PIL.Image`` or ``numpy.ndarray`` to tensor for segmantation.
-
-    Converts a PIL.Image or numpy.ndarray (H x W x C) in the range
-    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].
-    """
-
-    def __call__(self, img, target):
-        """
-        Args:
-            img (PIL.Image or numpy.ndarray): Image to be converted to tensor.
-            target (numpy.ndarray): convert target to long tensor
-
-        Returns:
-            Tensor: Converted image.
-        """
-
-        return F.to_tensor(img), torch.from_numpy(target).long()
-
-
 class SegPieceTransform(object):
     def __init__(self, numcols=5, numrows=5, warp_left_right=10, warp_up_down=10):
         if numcols<0 :

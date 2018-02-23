@@ -31,7 +31,7 @@ def _image_loader(path, filetype):
         return img
     elif filetype in TIF_EXTENSIONS:
         img = tifffile.imread(path)
-        warnings.warn("tiff file should be 16-bit format.")
+        # warnings.warn("tiff file should be 16-bit format.")
         img = img.astype(dtype=np.int32) # torch.from_numpy only supported types are: double, float, int64, int32, and uint8.
         return img
 
@@ -88,7 +88,7 @@ def parse_segmentation_lstfile(rootdir, lstpath, sep='\t'):
     :return: images path list and labels path list
     """
     images_path = []
-    with open(lstpath, 'r', ) as f:
+    with open(os.path.join(rootdir, lstpath), 'r', ) as f:
         for line in csv.reader(f, delimiter="\t"):
             image = os.path.join(rootdir, line[0])
             label = os.path.join(rootdir, line[1])

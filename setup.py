@@ -1,5 +1,5 @@
 #coding: --utf-8--
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 # Check if OpenCV is installed and raise an error if it is not
@@ -35,28 +35,11 @@ setup(
     version = version,
     description = u'Enhance torchvision for multi-channel images, 16-bit image, segmentation...',
     long_description = readme,
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Information Technology',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: C',
-        'Programming Language :: Cython',
-        # 'Programming Language :: Python :: 2.7',s
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-        'Topic :: Multimedia :: Graphics :: Graphics Conversion',
-        'Topic :: Scientific/Engineering :: GIS'],
     keywords=['pytorch', 'vision', 'augmentation', 'deep learning'],
     author='sshuair',
     author_email='sshuair@gmail.com',
-    url='https://github.com/sshuair/torchvison-enhance',
-    packages = ['torchvision_x'],
+    url='https://github.com/sshuair/torchvision-enhance',
+    packages = find_packages(exclude=('test')),
     install_requires=inst_reqs,
 
 )
