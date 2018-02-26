@@ -7,7 +7,7 @@ torchvision-enhance is used to enhance the offical PyTorch vision library torchv
 
 
 
-## support transforms
+## Support transforms
 - RandomFlip
 - RandomVFlip
 - RandomHFlip
@@ -23,7 +23,7 @@ torchvision-enhance is used to enhance the offical PyTorch vision library torchv
 - ToTensor
 - Normalize
 
-## install
+## Install
 ```
 pip install torchvision-enhance
 ```  
@@ -35,8 +35,15 @@ git clone
 pip install -r requirements.txt
 python setup.py install
 ```
+## Dependencies
+- numpy
+- scipy
+- Pillow
+- PyTorch
+- opencv
+- scikit-image
 
-## usage
+## Usage
 For more useage, check out the [example-classification.py](./test/example-classification.py) and [example-segmentation.py](./test/example-segmentation.py)
 
 ``` python

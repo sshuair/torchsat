@@ -98,6 +98,29 @@ def parse_segmentation_lstfile(rootdir, lstpath, sep='\t'):
     return images_path
 
 
+def parse_predict_lstfile(rootdir, lstpath):
+    """
+    parse image file into tuple for single-label classification
+    file organization：
+        class \t file_path
+        4  \t plane.jpg
+        1  \t human.jpg
+        ... \t ...
+
+    :param rootdir: train/val 文件路径
+    :param lstpath: 类别以及文件对应关系文件
+    :return: images(image_path, class)
+    """
+    images_path = []
+    with open(os.path.join(rootdir, lstpath), 'r',) as f:
+        for line in csv.reader(f, delimiter="\t"):
+            filename = line[0]
+            if os.path.exists(os.path.join(rootdir, filename)):
+                item = os.path.join(rootdir, filename)
+                images_path.append(item)
+    return images_path
+
+
 class SingleLabelImageLoader(Dataset):
     """
     single-label classification: single label, file list
@@ -194,6 +217,38 @@ class SemanticSegmentationLoader(Dataset):
         # if self.target_transform is not None:
         #     label = self.target_transform(target)
         return image, target
+
+    def __len__(self):
+        return len(self.images_path)
+
+
+class PredictLoader(Dataset):
+    """
+    Semantic Segmentation Loader.
+    the input transform will work for input image and target image both
+    """
+
+    def __init__(self, rootdir, lstpath, filetype='jpg', transform=None, target_transform=None, loader=_image_loader):
+        images_path = parse_predict_lstfile(rootdir, lstpath)
+        if len(images_path) == 0:
+            raise(RuntimeError("Found 0 images in subfolders of: " + rootdir + "\n"
+                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+        self.images_path = images_path
+        self.rootdir = rootdir
+        self.lstpath = lstpath
+        self.filetype = filetype
+        self.transform = transform
+        self.target_transform = target_transform
+        self.loader = loader
+
+    def __getitem__(self, index):
+        image = self.images_path[index]
+        image = self.loader(image, self.filetype[0])
+        # target = self.loader(target, 'png')
+
+        if self.transform is not None:
+            image = self.transform(image)
+        return image
 
     def __len__(self):
         return len(self.images_path)
