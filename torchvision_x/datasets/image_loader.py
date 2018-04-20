@@ -88,7 +88,7 @@ def parse_segmentation_lstfile(rootdir, lstpath, sep='\t'):
     :return: images path list and labels path list
     """
     images_path = []
-    with open(os.path.join(rootdir, lstpath), 'r', ) as f:
+    with open(lstpath, 'r', ) as f:
         for line in csv.reader(f, delimiter="\t"):
             image = os.path.join(rootdir, line[0])
             label = os.path.join(rootdir, line[1])
