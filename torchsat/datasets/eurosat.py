@@ -17,6 +17,8 @@ CLASSES_TO_IDX = {
 
 
 class EuroSAT(DatasetFolder):
+    url_rgb = 'http://madm.dfki.de/files/sentinel/EuroSAT.zip'
+    url_allband = 'http://madm.dfki.de/files/sentinel/EuroSATallBands.zip'
 
     def __init__(self, root, mode='RGB', download=False, **kwargs):
         if mode not in ['RGB', 'AllBand']:
@@ -37,16 +39,3 @@ class EuroSAT(DatasetFolder):
 
     def download():
         pass
-
-
-if __name__ == "__main__":
-    root_fp = '/Volumes/sshuair/dl-satellite-data/pytorch-satallite-data/classification/EuroSAT'
-    transform = transforms.Compose([
-        # you can add other transformations in this list
-        transforms.ToTensor()
-    ])
-    eurosat_dataset = eurosat.EuroSAT(root_fp, mode='RGB', transform=transform)
-    eurosat_loader = DataLoader(eurosat_dataset)
-    for inputs, labels in eurosat_loader:
-        print(inputs, labels)
-        break
