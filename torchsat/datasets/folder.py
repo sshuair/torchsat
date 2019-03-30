@@ -1,3 +1,4 @@
+# original source code from https://github.com/pytorch/vision/blob/master/torchvision/datasets/folder.py
 import torch.utils.data as data
 
 from PIL import Image
@@ -9,9 +10,11 @@ import sys
 
 def has_file_allowed_extension(filename, extensions):
     """Checks if a file is an allowed extension.
+
     Args:
         filename (string): path to a file
         extensions (iterable of strings): extensions to consider (lowercase)
+
     Returns:
         bool: True if the filename ends with one of given extensions
     """
@@ -21,8 +24,10 @@ def has_file_allowed_extension(filename, extensions):
 
 def is_image_file(filename):
     """Checks if a file is an allowed image extension.
+
     Args:
         filename (string): path to a file
+
     Returns:
         bool: True if the filename ends with a known image extension
     """
@@ -49,21 +54,27 @@ def make_dataset(dir, class_to_idx, extensions):
 
 class DatasetFolder(data.Dataset):
     """A generic data loader where the samples are arranged in this way: ::
+
         root/class_x/xxx.ext
         root/class_x/xxy.ext
         root/class_x/xxz.ext
+
         root/class_y/123.ext
         root/class_y/nsdf3.ext
         root/class_y/asd932_.ext
+
     Args:
         root (string): Root directory path.
         loader (callable): A function to load a sample given its path.
         extensions (list[string]): A list of allowed extensions.
+        classes (callable, optional): List of the class names.
+        class_to_idx (callable, optional): Dict with items (class_name, class_index).
         transform (callable, optional): A function/transform that takes in
             a sample and returns a transformed version.
             E.g, ``transforms.RandomCrop`` for images.
         target_transform (callable, optional): A function/transform that takes
             in the target and transforms it.
+
      Attributes:
         classes (list): List of the class names.
         class_to_idx (dict): Dict with items (class_name, class_index).
@@ -71,8 +82,9 @@ class DatasetFolder(data.Dataset):
         targets (list): The class_index value for each image in the dataset
     """
 
-    def __init__(self, root, loader, extensions, transform=None, target_transform=None):
-        classes, class_to_idx = self._find_classes(root)
+    def __init__(self, root, loader, extensions, classes=None, class_to_idx=None, transform=None, target_transform=None):
+        if not class_to_idx:
+            classes, class_to_idx = self._find_classes(root)
         samples = make_dataset(root, class_to_idx, extensions)
         if len(samples) == 0:
             raise(RuntimeError("Found 0 files in subfolders of: " + root + "\n"
@@ -93,10 +105,13 @@ class DatasetFolder(data.Dataset):
     def _find_classes(self, dir):
         """
         Finds the class folders in a dataset.
+
         Args:
             dir (string): Root directory path.
+
         Returns:
             tuple: (classes, class_to_idx) where classes are relative to (dir), and class_to_idx is a dictionary.
+
         Ensures:
             No class is a subdirectory of another.
         """
@@ -113,6 +128,7 @@ class DatasetFolder(data.Dataset):
         """
         Args:
             index (int): Index
+
         Returns:
             tuple: (sample, target) where target is class_index of the target class.
         """
@@ -158,6 +174,11 @@ def accimage_loader(path):
         return pil_loader(path)
 
 
+def tifffile_loader(path):
+    import tifffile
+    return tifffile.imread(path)
+
+
 def default_loader(path):
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
@@ -168,12 +189,15 @@ def default_loader(path):
 
 class ImageFolder(DatasetFolder):
     """A generic data loader where the images are arranged in this way: ::
+
         root/dog/xxx.png
         root/dog/xxy.png
         root/dog/xxz.png
+
         root/cat/123.png
         root/cat/nsdf3.png
         root/cat/asd932_.png
+
     Args:
         root (string): Root directory path.
         transform (callable, optional): A function/transform that  takes in an PIL image
@@ -181,6 +205,7 @@ class ImageFolder(DatasetFolder):
         target_transform (callable, optional): A function/transform that takes in the
             target and transforms it.
         loader (callable, optional): A function to load an image given its path.
+
      Attributes:
         classes (list): List of the class names.
         class_to_idx (dict): Dict with items (class_name, class_index).

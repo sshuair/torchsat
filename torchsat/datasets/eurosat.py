@@ -1,13 +1,8 @@
 import os
-from collections import namedtuple
-from PIL import Image
-import torch.utils.data as data
-from torchvision.datasets.folder import DatasetFolder
-
-from .utils import download_url
+from .folder import DatasetFolder, tifffile_loader, pil_loader
 
 
-LANDUSE_CLASSES = {
+CLASSES_TO_IDX = {
         'AnnualCrop': 0,
         'Forest': 1,
         'HerbaceousVegetation': 2,
@@ -20,62 +15,38 @@ LANDUSE_CLASSES = {
         'SeaLake': 9,
     }
 
-class EuroSAT(data.Dataset):
 
-    def __init__(self, root, mode='RGB', transform=None, target_transform=None, 
-        download=False):
-        self.root = os.path.expanduser(root)
-        self.mode = mode
-        self.transform = transform
-        self.target_transform = target_transform
+class EuroSAT(DatasetFolder):
 
+    def __init__(self, root, mode='RGB', download=False, **kwargs):
         if mode not in ['RGB', 'AllBand']:
             raise ValueError('{} is not suppport mode, replace with RGB or AllBand'.format(self.mode))
 
-        if download:
-            self.download()
+        if mode == 'RGB':
+            self.loader = pil_loader
+            self.extensions = ['.jpg', '.jpeg']
+        else:
+            self.loader = tifffile_loader
+            self.extensions = ['.tif', '.tiff']
 
-        self.images = []
-        self.targets = []
+        classes = list(CLASSES_TO_IDX.keys())
 
-        for landuse in os.listdir(self.root):
-            for img in os.listdir(os.path.join(self.root, landuse)):
-                self.targets.append(LANDUSE_CLASSES[landuse])
-                self.images.append(os.path.join(self.root, landuse, img))
-
-    def __getitem__(self, index):
-
-        if self.mode == 'RGB':
-            image = pil_loader(self.images[index])
-            target = self.targets[index]
-        elif self.mode == 'AllBand':
-            raise ValueError('not implemented')
-        
-        if self.transform:
-            image = self.transform(image)
-        if self.target_transform:
-            target = self.target_transform(target)
-        
-        return image, target
-
-    def __len__(self):
-        return len(self.images)
-    
-    def _check_integrity(self):
-        pass
+        super(EuroSAT, self).__init__( root, self.loader, self.extensions, 
+        classes=classes, class_to_idx=CLASSES_TO_IDX, **kwargs
+        )
 
     def download():
         pass
 
-    def __repr__(self):
-        pass
 
-
-def pil_loader(path):
-    with open(path, 'rb') as f:
-        img = Image.open(f)
-        return img.convert('RGB')
-
-def tiffile_loader(path):
-    import tiffifle
-    return tifffile.imread(path)
+if __name__ == "__main__":
+    root_fp = '/Volumes/sshuair/dl-satellite-data/pytorch-satallite-data/classification/EuroSAT'
+    transform = transforms.Compose([
+        # you can add other transformations in this list
+        transforms.ToTensor()
+    ])
+    eurosat_dataset = eurosat.EuroSAT(root_fp, mode='RGB', transform=transform)
+    eurosat_loader = DataLoader(eurosat_dataset)
+    for inputs, labels in eurosat_loader:
+        print(inputs, labels)
+        break
