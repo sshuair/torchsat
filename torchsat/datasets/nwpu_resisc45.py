@@ -1,5 +1,4 @@
 from .folder import DatasetFolder, default_loader
-from torchvision.datasets.utils import download_url
 
 CLASSES_TO_IDX = {
     'airplane': 0,
