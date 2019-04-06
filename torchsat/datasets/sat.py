@@ -1,10 +1,25 @@
 import os
-import torch.utils.data as data
+
 import numpy as np
+import torch.utils.data as data
+
 from scipy.io import loadmat
 
 
 class SAT(data.Dataset):
+    """SAT-4 and SAT-6 datasat 
+    
+    Arguments:
+        data {root} -- [description]
+    
+    Raises:
+        ValueError -- [description]
+        ValueError -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
+
 
     classes_sat4 = {
        'barren land': 0,

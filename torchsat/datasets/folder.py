@@ -1,12 +1,13 @@
 # original source code from https://github.com/pytorch/vision/blob/master/torchvision/datasets/folder.py
-import torch.utils.data as data
-
-from PIL import Image
-
 import os
 import os.path
 import sys
 
+import numpy as np
+import torch.utils.data as data
+from PIL import Image
+
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
 
 def has_file_allowed_extension(filename, extensions):
     """Checks if a file is an allowed extension.
@@ -153,38 +154,6 @@ class DatasetFolder(data.Dataset):
         tmp = '    Target Transforms (if any): '
         fmt_str += '{0}{1}'.format(tmp, self.target_transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         return fmt_str
-
-
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
-
-
-def pil_loader(path):
-    # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
-    with open(path, 'rb') as f:
-        img = Image.open(f)
-        return img.convert('RGB')
-
-
-def accimage_loader(path):
-    import accimage
-    try:
-        return accimage.Image(path)
-    except IOError:
-        # Potentially a decoding problem, fall back to PIL.Image
-        return pil_loader(path)
-
-
-def tifffile_loader(path):
-    import tifffile
-    return tifffile.imread(path)
-
-
-def default_loader(path):
-    from torchvision import get_image_backend
-    if get_image_backend() == 'accimage':
-        return accimage_loader(path)
-    else:
-        return pil_loader(path)
 
 
 class ImageFolder(DatasetFolder):

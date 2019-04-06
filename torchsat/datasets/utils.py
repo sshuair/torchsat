@@ -34,3 +34,34 @@ def download_url(url, root, filename=None, md5=None):
                     url, fpath,
                     reporthook=gen_bar_updater()
                 )
+
+
+def tifffile_loader(path):
+    # all the loader should be numpy ndarray [height, width, channels]
+    import tifffile
+    img = tifffile.imread(path)
+    return np.array(img.astype(np.int16))
+
+
+def default_loader(path):
+    from torchvision import get_image_backend
+    if get_image_backend() == 'accimage':
+        return accimage_loader(path)
+    else:
+        return pil_loader(path)
+
+def pil_loader(path):
+    # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+    # all the loader should be numpy ndarray [height, width, channels]
+    with open(path, 'rb') as f:
+        img = Image.open(f).convert('RGB')
+        return np.array(img)
+
+def accimage_loader(path):
+    import accimage
+    try:
+        return accimage.Image(path)
+    except IOError:
+        # Potentially a decoding problem, fall back to PIL.Image
+        return pil_loader(path)
+

@@ -1,4 +1,5 @@
-from .folder import DatasetFolder, default_loader
+from .folder import DatasetFolder
+from .utils import default_loader
 
 CLASSES_TO_IDX = {
     'airplane': 0,

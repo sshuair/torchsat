@@ -1,6 +1,7 @@
 import os
-from .folder import DatasetFolder, tifffile_loader, pil_loader
 
+from .folder import DatasetFolder
+from .utils import pil_loader, tifffile_loader
 
 CLASSES_TO_IDX = {
         'AnnualCrop': 0,
@@ -30,10 +31,11 @@ class EuroSAT(DatasetFolder):
         else:
             self.loader = tifffile_loader
             self.extensions = ['.tif', '.tiff']
+            root = os.path.join(root, 'images/remote_sensing/otherDatasets/sentinel_2/tif')
 
         classes = list(CLASSES_TO_IDX.keys())
 
-        super(EuroSAT, self).__init__( root, self.loader, self.extensions, 
+        super(EuroSAT, self).__init__(root, self.loader, self.extensions, 
         classes=classes, class_to_idx=CLASSES_TO_IDX, **kwargs
         )
 
