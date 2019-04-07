@@ -18,6 +18,10 @@ __numpy_type_map = {
     'uint8': torch.ByteTensor,
 }
 
+'''image functional utils
+
+'''
+
 # NOTE: all the function should recive the ndarray like image, should be W x H x C or W x H
 
 # 如果将所有输出的维度够搞成height，width，channel 那么可以不用to_tensor??, 不行
@@ -67,11 +71,13 @@ def to_tensor(img):
         return img
 
 
-def to_pil_image():
+def to_pil_image(tensor):
+    # TODO
     pass
 
 
 def to_tiff_image(tensor):
+    # TODO
     pass
 
 
@@ -136,7 +142,7 @@ def resize(img, size, interpolation=Image.BILINEAR):
     return cv2.resize(img, (width, height), interpolation=interpolation)
 
 
-def pad(img, padding, mode='reflect', **kwargs):
+def pad(img, padding, mode='reflect'):
     """Pad the given image.
     Args:
         padding : int, padding width
@@ -208,8 +214,10 @@ def center_crop(img, output_size):
     Returns:
         ndarray image -- return croped ndarray image.
     '''
-
-    img_height, img_width, _ = img.shape
+    if len(img.shape) == 2:
+        img_height, img_width = img.shape
+    else:
+        img_height, img_width, _ = img.shape
 
     if isinstance(output_size, numbers.Number):
         output_size = (int(output_size), int(output_size))
@@ -248,7 +256,7 @@ def adjust_brightness():
 def adjust_contrast():
     pass
 
-def adjust_satutation():
+def adjust_saturation():
     pass
 
 def adjust_hue():
