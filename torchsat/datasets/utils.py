@@ -1,3 +1,5 @@
+import numpy as np
+
 def download_url(url, root, filename=None, md5=None):
     """Download a file from a url and place it in root.
     Args:
@@ -38,17 +40,14 @@ def download_url(url, root, filename=None, md5=None):
 
 def tifffile_loader(path):
     # all the loader should be numpy ndarray [height, width, channels]
+    # int16: (-32768 to 32767)
     import tifffile
     img = tifffile.imread(path)
-    return np.array(img.astype(np.int16))
-
-
-def default_loader(path):
-    from torchvision import get_image_backend
-    if get_image_backend() == 'accimage':
-        return accimage_loader(path)
+    if img.dtype in [np.uint8, np.uint16, np.float]:
+        return img
     else:
-        return pil_loader(path)
+        raise TypeError('tiff file only support np.uint8, np.uint16, np.float, but got {}'.format(img.dtype))
+
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
@@ -65,3 +64,9 @@ def accimage_loader(path):
         # Potentially a decoding problem, fall back to PIL.Image
         return pil_loader(path)
 
+def default_loader(path):
+    from torchvision import get_image_backend
+    if get_image_backend() == 'accimage':
+        return accimage_loader(path)
+    else:
+        return pil_loader(path)

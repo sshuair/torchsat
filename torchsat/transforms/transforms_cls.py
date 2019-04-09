@@ -1,11 +1,13 @@
 from . import functional as F
 import random
 import numbers
+from PIL import Image
 
-__all__ = ["Compose", "ToTensor", "ToPILImage", "Normalize", "Resize", "Scale", "CenterCrop", "Pad",
-           "Lambda", "RandomApply", "RandomChoice", "RandomOrder", "RandomCrop", "RandomHorizontalFlip",
-           "RandomVerticalFlip", "RandomResizedCrop", "RandomSizedCrop", "FiveCrop", "TenCrop", "LinearTransformation",
-           "AffineTransformation", "ColorJitter", "RandomRotation", "RandomAffine", "Grayscale", "RandomGrayscale"]
+__all__ = ["Compose", "ToTensor", "ToPILImage", "Normalize", "Resize", "CenterCrop", "Pad",
+           "Lambda", "RandomCrop", "RandomHorizontalFlip", "RandomVerticalFlip", 
+           "RandomResizedCrop", "FiveCrop", "TenCrop",
+           "AffineTransformation", "ColorJitter", "RandomRotation", "RandomAffine", "Grayscale", "RandomGrayscale",
+           'RandomShift', 'PieceTransform']
 
 
 class Compose(object):
@@ -35,16 +37,12 @@ class Lambda(object):
 
     def __repr__(self):
         return self.__class__.__namme + '()'
-    
+
 
 class ToTensor(object):
     def __call__(self, img):
 
         return F.to_tensor(img)
-
-class ToPILImage(object):
-    # TODO
-    pass
 
 
 class Normalize(object):
@@ -57,6 +55,56 @@ class Normalize(object):
     def __call__(self, tensor):
         return F.normalize(tensor, self.mean, self.std, self.inplace)
 
+
+class ToPILImage(object):
+    # TODO
+    pass
+
+
+class RandomNoise(object):
+    def __init__(self, mode='gaussian'):
+        if mode not in ['gaussian', 'salt', 'pepper']:
+            raise ValueError('mode should be gaussian, salt, pepper, but got {}'.format(mode))
+
+    def __call__(self, img):
+        F.noise(img, self.mode)
+
+class GaussianBlur(object):
+    def __init__(self, kernel_size=3):
+        self.kernel_size = kernel_size
+
+    def __call__(self, img):
+        return F.gaussian_blur(img, self.kernel_size)
+
+
+class RandomShift(object):
+    def __init__(self, max_percent=0.4):
+        self.max_percent = max_percent
+
+    def __call__(self, img):
+        height, width = img.shape[0:2]
+        max_top = int(height * self.max_percent)
+        max_left = int(width * self.max_percent)
+        top = random.randint(-max_top, max_top)
+        left = random.randint(-max_left, max_left)
+
+        return F.shift(img, top, left)
+
+class RandomRotation(object):
+    def __init__(self, degrees, center=None):
+        if isinstance(degrees, numbers.Number):
+            if degrees < 0:
+                raise ValueError("If degrees is a single number, it must be positive.")
+            self.degrees = (-degrees, degrees)
+        else:
+            if len(degrees) != 2:
+                raise ValueError("If degrees is a sequence, it must be of len 2.")
+            self.degrees = degrees
+        self.center = center
+
+    def __call__(self, img):
+        angle = random.uniform(self.degrees[0], self.degrees[1])
+        return F.rotate(img, angle, self.center)
 
 class Resize(object):
     def __init__(self, size, interpolation=Image.BILINEAR):
@@ -91,10 +139,7 @@ class RandomCrop(object):
             self.size = size
 
     def __call__(self, img):
-        if len(img.shape) == 2:
-            h, w = img.shape
-        else:
-            h, w, _  = img.shape
+        h, w = img.shape[0:2]
         th, tw = size
         if w == tw and h == tw:
             return img

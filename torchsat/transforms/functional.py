@@ -61,14 +61,18 @@ def to_tensor(img):
     if img.ndim == 2:
         img = img[:, :, None]
 
-    img = torch.from_numpy(img.transpose((2, 0, 1)))
-    # backward compatibility
-    if isinstance(img, torch.ByteTensor):
-        return img.float().div(255)
-    elif isinstance(img, torch.ShortTensor):
-        return img.float().div(65535)
+    if img.dtype == np.uint8:
+        img = img.astype(np.float)/255
+    elif img.dtype == np.uint16:
+        img = img.astype(np.float)/65535
+    elif img.dtype == np.float:
+        img = img.astype(np.float)/1
     else:
-        return img
+        raise TypeError('{} is not support'.format(img.dtype))
+    
+    img = torch.from_numpy(img.transpose((2, 0, 1)))
+
+    return img
 
 
 def to_pil_image(tensor):
@@ -107,6 +111,81 @@ def normalize(tensor, mean, std, inplace=False):
     std = torch.as_tensor(std, dtype=torch.float32, device=tensor.device)
     tensor.sub_(mean[:, None, None]).div_(std[:, None, None])
     return tensor
+
+def noise(img, mode='gaussain', percent=0.004):
+    if mode == 'gaussian':
+        mean = 0
+        var = 0.1
+        sigma = var*0.5
+        if img.dim == 2:
+            h, w = img.shape
+            gauss = np.random.normal(mean, sigma, (h, w))
+        else:
+            h, w, c = img.shape
+            gauss = np.random.normal(mean, sigma, (h, w, c))
+        noisy = img + gauss
+
+    elif mode == 'salt':
+        row,col,ch = img.shape
+        s_vs_p = 0.5
+        num_salt = np.ceil(percent * img.size * s_vs_p)
+        coords = [np.random.randint(0, i - 1, int(num_salt)) for i in img.shape]
+        img[coords] = 1
+    
+    elif mode == 'pepper':
+        h, w, c = img.shape
+        s_vs_p = 0.5
+        amount = 0.004
+        out = np.copy(img)
+        # Pepper mode
+        num_pepper = np.ceil(amount* img.size * (1. - s_vs_p))
+        coords = [np.random.randint(0, i - 1, int(num_pepper))
+                for i in img.shape]
+        out[coords] = 0
+
+    elif mode == 's&p':
+        row,col,ch = img.shape
+        s_vs_p = 0.5
+        amount = 0.004
+        out = np.copy(img)
+        # Salt mode
+        num_salt = np.ceil(amount * img.size * s_vs_p)
+        coords = [np.random.randint(0, i - 1, int(num_salt))
+                for i in img.shape]
+        out[coords] = 1
+
+        # Pepper mode
+        num_pepper = np.ceil(amount* img.size * (1. - s_vs_p))
+        coords = [np.random.randint(0, i - 1, int(num_pepper))
+                for i in img.shape]
+        out[coords] = 0
+
+    return noisy
+
+
+def gaussian_blur(img, kernel_size):
+    # When sigma=0, it is computed as `sigma = 0.3*((ksize-1)*0.5 - 1) + 0.8`
+    return cv2.GaussianBlur(img, (kernel_size, kernel_size), sigmaX=0)
+
+
+def shift(img, top, left):
+    (h, w) = img.shape[0:2]
+    matrix = np.float32([[1, 0, left], [0, 1, top]])
+    dst = cv2.warpAffine(img, matrix, (w, h))
+
+    return dst
+    
+
+def rotate(img, angle, center=None, scale=1.0):
+    (h, w) = img.shape[:2]
+ 
+    if center is None:
+        center = (w / 2, h / 2)
+ 
+    M = cv2.getRotationMatrix2D(center, angle, scale)
+    rotated = cv2.warpAffine(img, M, (w, h))
+ 
+    return rotated
 
 
 def resize(img, size, interpolation=Image.BILINEAR):
@@ -163,9 +242,9 @@ def pad(img, padding, mode='reflect'):
         pad_right = padding[2]
         pad_bottom = padding[3]
 
-    if len(img.shape) == 2:
+    if img.ndim == 2:
         img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right)), mode=mode)
-    if len(img.shape) == 3:
+    if img.ndim == 3:
         img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)), mode=mode)
     
     return img
@@ -195,9 +274,9 @@ def crop(img, top, left, height, width):
         raise ValueError('the input crop width and height should be small or \
          equal to image width and height. ')
 
-    if img.shape == 2:
+    if img.ndim == 2:
         return img[top:(top+height), left:(left+width)]
-    elif img.shape == 3:
+    elif img.ndim == 3:
         return img[top:(top+height), left:(left+width), :]
 
 
@@ -214,7 +293,7 @@ def center_crop(img, output_size):
     Returns:
         ndarray image -- return croped ndarray image.
     '''
-    if len(img.shape) == 2:
+    if img.ndim == 2:
         img_height, img_width = img.shape
     else:
         img_height, img_width, _ = img.shape
