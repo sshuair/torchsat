@@ -180,7 +180,9 @@ class RandomResizedCrop(object):
 
 
 class ElasticTransform(object):
-    """Elastic deformation of images as described in [Simard2003]_ (with modifications).
+    """
+    code modify from https://github.com/albu/albumentations.  
+    Elastic deformation of images as described in [Simard2003]_ (with modifications).
     Based on https://gist.github.com/erniejunior/601cdf56d2b424757de5
     .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
          Convolutional Neural Networks applied to Visual Document Analysis", in
@@ -189,10 +191,8 @@ class ElasticTransform(object):
     Args:
         approximate (boolean): Whether to smooth displacement map with fixed kernel size.
                                Enabling this option gives ~2X speedup on large images.
-    Targets:
-        image, mask
     Image types:
-        uint8, float32
+        uint8, uint16 float32
     """
 
     def __init__(self, alpha=1, sigma=50, alpha_affine=50, interpolation=cv2.INTER_LINEAR,
