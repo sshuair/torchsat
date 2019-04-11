@@ -175,8 +175,25 @@ class RandomVerticalFlip(object):
 
 
 class RandomResizedCrop(object):
-    def __init__(self, *args, **kwargs):
-        return super().__init__(*args, **kwargs)
+    def __init__(self, crop_size, target_size, interpolation=Image.BILINEAR):
+        if isinstance(crop_size, numbers.Number):
+            self.crop_size = (crop_size, crop_size)
+        else:
+            self.crop_size = crop_size
+        self.target_size = target_size
+        self.interpolation = interpolation
+    def __call__(self, img):
+        h, w = img.shape[0:2]
+        th, tw = self.crop_size
+        if w == tw and h == tw:
+            return img
+
+        top = random.randint(0, h - th)
+        left = random.randint(0, w - tw)
+
+        img = F.crop(img, top, left, th, tw)
+        img = F.resize(self.target_size, interpolation=self.interpolation)
+
 
 
 class ElasticTransform(object):
