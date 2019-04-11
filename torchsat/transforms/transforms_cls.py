@@ -69,6 +69,7 @@ class RandomNoise(object):
     def __call__(self, img):
         F.noise(img, self.mode)
 
+
 class GaussianBlur(object):
     def __init__(self, kernel_size=3):
         self.kernel_size = kernel_size
@@ -89,6 +90,7 @@ class RandomShift(object):
         left = random.randint(-max_left, max_left)
 
         return F.shift(img, top, left)
+
 
 class RandomRotation(object):
     def __init__(self, degrees, center=None):
@@ -175,3 +177,35 @@ class RandomVerticalFlip(object):
 class RandomResizedCrop(object):
     def __init__(self, *args, **kwargs):
         return super().__init__(*args, **kwargs)
+
+
+class ElasticTransform(object):
+    """Elastic deformation of images as described in [Simard2003]_ (with modifications).
+    Based on https://gist.github.com/erniejunior/601cdf56d2b424757de5
+    .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
+         Convolutional Neural Networks applied to Visual Document Analysis", in
+         Proc. of the International Conference on Document Analysis and
+         Recognition, 2003.
+    Args:
+        approximate (boolean): Whether to smooth displacement map with fixed kernel size.
+                               Enabling this option gives ~2X speedup on large images.
+    Targets:
+        image, mask
+    Image types:
+        uint8, float32
+    """
+
+    def __init__(self, alpha=1, sigma=50, alpha_affine=50, interpolation=cv2.INTER_LINEAR,
+                 border_mode=cv2.BORDER_REFLECT_101, random_state=None, approximate=False):
+        self.alpha = alpha
+        self.alpha_affine = alpha_affine
+        self.sigma = sigma
+        self.interpolation = interpolation
+        self.border_mode = border_mode
+        self.random_state = random_state
+        self.approximate = approximate
+
+    def __call__(self, img):
+        return F.elastic_transform(img, self.alpha, self.sigma, self.alpha_affine, self.interpolation,
+                                   self.border_mode, np.random.RandomState(self.random_state),
+                                   self.approximate)
