@@ -1,11 +1,89 @@
 # TorchSat
 
-TorchSat is an open-source PyTorch framework for satellite imagery analysis. 
+**Work In Progress...**
 
-Hightlight:
-- support multi-channels(> 4 channels, e.g. 8 channels) and TIFF file as input.
-- lots of common satellite datasets loader.
-- convenient data augmentation for classification, sementic segmentation, object detection and instance segmentation.
+TorchSat is an open-source PyTorch framework for satellite imagery analysis.
+
+**Hightlight**:
+- support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
+- convenient data augmentation method for classification, sementic segmentation, object detection and instance segmentation.
+- lots of common satellite datasets loader, .
 - lots of models for satellite vision tasks, such as ResNet, PSPNet, SSD, and MaskRCNN ...
 - training script for common satellite vision tasks.
+
+# Install
+
+python setup.py install
+
+
+# How to use
+- Introduction
+- Data augmentation
+- models
+- train
+
+# Features
+
+## Transform
+
+We suppose all the input images and masks should be NumPy ndarray, should be **[width, height]** or **[width, height, channels]**.
+
+### pixel level
+
+Pixel-level transforms only change the input image and will leave any additional targets such as masks, bounding boxes unchanged. It support all channel images. Some transforms only support specific input channles.
+
+| Transform            | Image  |  masks | BBoxes |
+| -------------------- | :---:    :---: | :----: |
+| ToTensor             |   ✓    |  /     |   /    |
+| Normalize            |   ✓    |  /     |   /    |
+| ToGray               |   ✓    |  /     |   /    |
+| GaussianBlur         |   ✓    |  /     |   /    |
+| RandomNoise          |   ✓    |  /     |   /    |
+| RandomBrightness     |   TODO |  /     |   /    |
+| RandomContrast       |   TODO |  /     |   /    |
+| RandomGamma          |   TODO |  /     |   /    |
+| RandomSigmoid        |   TODO |  /     |   /    |
+
+
+### spatial-level
+Spatial-level transforms will simultaneously change both an input image as well as additional targets such as masks, bounding boxes. It support all channel images.
+
+| Transform            | Image | masks | BBoxes |
+| -------------------- | :---: | :---: | :----: |
+| Resize               |   ✓   |   ✓   |        |
+| CenterCrop           |   ✓   |   ✓   |        |
+| Pad                  |   ✓   |   ✓   |        |
+| RandomCrop           |   ✓   |   ✓   |        |
+| RandomHorizontalFlip |   ✓   |   ✓   |        |
+| RandomVerticalFlip   |   ✓   |   ✓   |        |
+| RandomResizedCrop    |   ✓   |   ✓   |        |
+| ElasticTransform     |   ✓   |   ✓   |        |
+| RandomRotation       |   ✓   |   ✓   |        |
+| RandomShift          |   ✓   |   ✓   |        |
+| RandomFlip           |   x   |   x   |        |
+
+
+## Dataloader
+### Classification
+- Sat
+- patternnet
+- NWPU_redisc45
+- EuroSat
+
+### Sementic Segmentation
+
+
+### Object Detection
+
+### Instance Segmentation
+
+## Models
+### Classification
+
+### Sementic Segmentation
+
+
+### Object Detection
+
+### Instance Segmentation
 
