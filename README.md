@@ -1,6 +1,5 @@
-# TorchSat
+# TorchSat (Work In Progress...)
 
-**Work In Progress...**
 
 TorchSat is an open-source PyTorch framework for satellite imagery analysis.
 
@@ -33,7 +32,7 @@ We suppose all the input images and masks should be NumPy ndarray, should be **[
 Pixel-level transforms only change the input image and will leave any additional targets such as masks, bounding boxes unchanged. It support all channel images. Some transforms only support specific input channles.
 
 | Transform            | Image  |  masks | BBoxes |
-| -------------------- | :---:    :---: | :----: |
+| -------------------- | :---:  |  :---: | :----: |
 | ToTensor             |   ✓    |  /     |   /    |
 | Normalize            |   ✓    |  /     |   /    |
 | ToGray               |   ✓    |  /     |   /    |
