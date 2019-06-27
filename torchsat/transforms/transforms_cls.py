@@ -1,12 +1,15 @@
-from . import functional as F
-import random
 import numbers
+import random
+
+import cv2
 from PIL import Image
+
+from . import functional as F
 
 __all__ = ["Compose", "ToTensor", "ToPILImage", "Normalize", "Resize", "CenterCrop", "Pad",
            "Lambda", "RandomCrop", "RandomHorizontalFlip", "RandomVerticalFlip", 
-           "RandomResizedCrop", "FiveCrop", "TenCrop",
-           "AffineTransformation", "ColorJitter", "RandomRotation", "RandomAffine", "Grayscale", "RandomGrayscale",
+           "RandomResizedCrop", "RandomRotation",
+           "AffineTransformation",  "RandomAffine", "Grayscale",
            'RandomShift', 'PieceTransform']
 
 
@@ -61,13 +64,12 @@ class ToPILImage(object):
     pass
 
 
-class RandomNoise(object):
-    def __init__(self, mode='gaussian'):
-        if mode not in ['gaussian', 'salt', 'pepper']:
-            raise ValueError('mode should be gaussian, salt, pepper, but got {}'.format(mode))
-
+class ToGray(object):
+    def __init__(self, output_channels=1):
+        self.output_channels = output_channels
     def __call__(self, img):
-        F.noise(img, self.mode)
+        return F.to_grayscale(img, self.output_channels)
+
 
 
 class GaussianBlur(object):
@@ -76,6 +78,17 @@ class GaussianBlur(object):
 
     def __call__(self, img):
         return F.gaussian_blur(img, self.kernel_size)
+
+
+
+class RandomNoise(object):
+    def __init__(self, mode='gaussian'):
+        if mode not in ['gaussian', 'salt', 'pepper', 's&p']:
+            raise ValueError('mode should be gaussian, salt, pepper, but got {}'.format(mode))
+        self.mode=mode
+    def __call__(self, img):
+        return F.noise(img, self.mode)
+
 
 
 class RandomShift(object):
@@ -226,3 +239,4 @@ class ElasticTransform(object):
         return F.elastic_transform(img, self.alpha, self.sigma, self.alpha_affine, self.interpolation,
                                    self.border_mode, np.random.RandomState(self.random_state),
                                    self.approximate)
+

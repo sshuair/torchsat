@@ -65,7 +65,7 @@ def to_tensor(img):
         img = img.astype(np.float)/255
     elif img.dtype == np.uint16:
         img = img.astype(np.float)/65535
-    elif img.dtype == np.float:
+    elif img.dtype in [np.float32, np.float64]:
         img = img.astype(np.float)/1
     else:
         raise TypeError('{} is not support'.format(img.dtype))
@@ -91,7 +91,7 @@ def normalize(tensor, mean, std, inplace=False):
     .. note::
         This transform acts out of place by default, i.e., it does not mutates the input tensor.
 
-    See :class:`~torchvision.transforms.Normalize` for more details.
+    See :class:`~torchsat.transforms.Normalize` for more details.
 
     Args:
         tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
@@ -107,59 +107,71 @@ def normalize(tensor, mean, std, inplace=False):
     if not inplace:
         tensor = tensor.clone()
 
-    mean = torch.as_tensor(mean, dtype=torch.float32, device=tensor.device)
-    std = torch.as_tensor(std, dtype=torch.float32, device=tensor.device)
+    mean = torch.as_tensor(mean, dtype=tensor.dtype, device=tensor.device)
+    std = torch.as_tensor(std, dtype=tensor.dtype, device=tensor.device)
     tensor.sub_(mean[:, None, None]).div_(std[:, None, None])
     return tensor
 
-def noise(img, mode='gaussain', percent=0.004):
+def noise(img, mode='gaussain', percent=0.02):
+    """
+    TODO: Not good for uint16 data
+    """
+    original_dtype = img.dtype
     if mode == 'gaussian':
         mean = 0
         var = 0.1
         sigma = var*0.5
-        if img.dim == 2:
+        
+        if img.ndim == 2:
             h, w = img.shape
             gauss = np.random.normal(mean, sigma, (h, w))
         else:
             h, w, c = img.shape
             gauss = np.random.normal(mean, sigma, (h, w, c))
-        noisy = img + gauss
+            
+        if img.dtype not in [np.float32, np.float64]:
+            gauss = gauss * np.iinfo(img.dtype).max
+            img = np.clip(img.astype(np.float) + gauss, 0, np.iinfo(img.dtype).max)
+        else:
+            img = np.clip(img.astype(np.float) + gauss, 0, 1)
 
     elif mode == 'salt':
-        row,col,ch = img.shape
-        s_vs_p = 0.5
+        print(img.dtype)
+        s_vs_p = 1
         num_salt = np.ceil(percent * img.size * s_vs_p)
-        coords = [np.random.randint(0, i - 1, int(num_salt)) for i in img.shape]
-        img[coords] = 1
-    
+        coords = tuple([np.random.randint(0, i - 1, int(num_salt)) for i in img.shape])
+        
+        if img.dtype in [np.float32, np.float64]:
+            img[coords] = 1
+        else:
+            img[coords] = np.iinfo(img.dtype).max
+            print(img.dtype)
     elif mode == 'pepper':
-        h, w, c = img.shape
-        s_vs_p = 0.5
-        amount = 0.004
-        out = np.copy(img)
-        # Pepper mode
-        num_pepper = np.ceil(amount* img.size * (1. - s_vs_p))
-        coords = [np.random.randint(0, i - 1, int(num_pepper))
-                for i in img.shape]
-        out[coords] = 0
+        s_vs_p = 0
+        num_pepper = np.ceil(percent * img.size * (1. - s_vs_p))
+        coords = tuple([np.random.randint(0, i - 1, int(num_pepper)) for i in img.shape])
+        img[coords] = 0
 
     elif mode == 's&p':
-        row,col,ch = img.shape
         s_vs_p = 0.5
-        amount = 0.004
-        out = np.copy(img)
+
         # Salt mode
-        num_salt = np.ceil(amount * img.size * s_vs_p)
-        coords = [np.random.randint(0, i - 1, int(num_salt))
-                for i in img.shape]
-        out[coords] = 1
+        num_salt = np.ceil(percent * img.size * s_vs_p)
+        coords = tuple([np.random.randint(0, i - 1, int(num_salt)) for i in img.shape])
+        if img.dtype in [np.float32, np.float64]:
+            img[coords] = 1
+        else:
+            img[coords] = np.iinfo(img.dtype).max
 
         # Pepper mode
-        num_pepper = np.ceil(amount* img.size * (1. - s_vs_p))
-        coords = [np.random.randint(0, i - 1, int(num_pepper))
-                for i in img.shape]
-        out[coords] = 0
-
+        num_pepper = np.ceil(percent* img.size * (1. - s_vs_p))
+        coords = tuple([np.random.randint(0, i - 1, int(num_pepper)) for i in img.shape])
+        img[coords] = 0
+    else:
+        raise ValueError('not support mode for {}'.format(mode))
+        
+    noisy = img.astype(original_dtype)
+    
     return noisy
 
 
@@ -190,7 +202,7 @@ def rotate(img, angle, center=None, scale=1.0):
 
 def resize(img, size, interpolation=Image.BILINEAR):
     '''resize the image
-    
+    TODO: opencv resize 之后图像就成了0~1了
     Arguments:
         img {ndarray} -- the input ndarray image
         size {int, iterable} -- the target size, if size is intger,  width and height will be resized to same \
@@ -323,12 +335,6 @@ def hflip(img):
 def vflip(img):
     return cv2.flip(img, 1)
 
-def five_crop():
-    pass
-
-def ten_crop():
-    pass
-
 def adjust_brightness():
     pass
 
@@ -344,14 +350,32 @@ def adjust_hue():
 def adjust_gamma():
     pass
 
-def rotate():
-    pass
 
-def affine():
-    pass
+def to_grayscale(img, output_channels=1):
+    """convert input ndarray image to gray sacle image.
+    
+    Arguments:
+        img {ndarray} -- the input ndarray image
+    
+    Keyword Arguments:
+        output_channels {int} -- output gray image channel (default: {1})
+    
+    Returns:
+        ndarray -- gray scale ndarray image
+    """
+    if img.ndim == 2:
+        gray_img = img
+    elif img.shape[2] == 3:
+        gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    else:
+        gray_img = np.mean(img, axis=2)
+        gray_img = gray_img.astype(img.dtype)
 
-def to_grayscale():
-    pass
+    if output_channels != 1:
+        gray_img = np.tile(gray_img, (output_channels, 1, 1))
+        gray_img = np.transpose(gray_img, [1,2,0])
+        
+    return gray_img
 
 
 def elastic_transform(image, alpha, sigma, alpha_affine, interpolation=cv2.INTER_LINEAR,
