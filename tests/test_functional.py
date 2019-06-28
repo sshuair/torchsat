@@ -37,12 +37,13 @@ def test_resize(fp):
         src_img = np.array(Image.open(fp))
 
     size = 256
-    dst_img = F.resize(src_img, size)
-    assert dst_img.shape[0:2] == (256,256)
+    dst = F.resize(src_img, size)
+    assert dst.shape[0:2] == (256,256)
 
     size = (128, 256)
-    dst_img = F.resize(src_img, size)
-    assert dst_img.shape[0:2] == (128,256)
+    dst = F.resize(src_img, size)
+    assert dst.shape[0:2] == (128,256)
+    assert dst.dtype == src_img.dtype
 
 
 @pytest.mark.parametrize('fp', all_files)
@@ -61,6 +62,7 @@ def test_pad(fp):
         assert dst[0,0] == img[50,50]
     if len(img.shape) == 3:
         assert dst[0,0,0] == img[50,50,0]
+    assert dst.dtype == img.dtype
     
 
 # @pytest.mask.parametrize('fp', files)

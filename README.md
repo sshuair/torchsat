@@ -23,9 +23,9 @@ python setup.py install
 
 # Features
 
-## Transform
+## Transforms
 
-We suppose all the input images and masks should be NumPy ndarray, should be **[width, height]** or **[width, height, channels]**.
+We suppose all the input images and masks should be NumPy ndarray. The data shape should be **[height, width]** or **[height, width, channels]**.
 
 ### pixel level
 
@@ -50,16 +50,17 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | Transform            | Image | masks | BBoxes |
 | -------------------- | :---: | :---: | :----: |
 | Resize               |   ✓   |   ✓   |        |
-| CenterCrop           |   ✓   |   ✓   |        |
 | Pad                  |   ✓   |   ✓   |        |
-| RandomCrop           |   ✓   |   ✓   |        |
 | RandomHorizontalFlip |   ✓   |   ✓   |        |
 | RandomVerticalFlip   |   ✓   |   ✓   |        |
+| RandomFlip           |   ✓   |   x   |        |
+| CenterCrop           |   ✓   |   ✓   |        |
+| RandomCrop           |   ✓   |   ✓   |        |
 | RandomResizedCrop    |   ✓   |   ✓   |        |
 | ElasticTransform     |   ✓   |   ✓   |        |
 | RandomRotation       |   ✓   |   ✓   |        |
 | RandomShift          |   ✓   |   ✓   |        |
-| RandomFlip           |   x   |   x   |        |
+
 
 
 ## Dataloader

@@ -1,10 +1,12 @@
-from functools import wraps
-import torch
-import numpy as np
-import cv2
 import collections
-from PIL import Image
 import numbers
+from functools import wraps
+
+import cv2
+import numpy as np
+import torch
+from PIL import Image
+from scipy.ndimage.filters import gaussian_filter
 
 __numpy_type_map = {
     'float64': torch.DoubleTensor,
@@ -233,16 +235,7 @@ def resize(img, size, interpolation=Image.BILINEAR):
     return cv2.resize(img, (width, height), interpolation=interpolation)
 
 
-def pad(img, padding, mode='reflect'):
-    """Pad the given image.
-    Args:
-        padding : int, padding width
-        mode: str or function. contain{‘constant’,‘edge’,‘linear_ramp’,‘maximum’,‘mean’
-            , ‘median’, ‘minimum’, ‘reflect’,‘symmetric’,‘wrap’}
-    Examples
-        --------
-        >>> Transformed_img = pad(img, (20,20,20,20), mode='reflect')
-    """
+def pad(img, padding, fill=0, padding_mode='constant'):
     if isinstance(padding, int):
         pad_left = pad_right = pad_top = pad_bottom = padding
     if isinstance(padding, collections.Iterable) and len(padding) == 2:
@@ -255,10 +248,15 @@ def pad(img, padding, mode='reflect'):
         pad_bottom = padding[3]
 
     if img.ndim == 2:
-        img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right)), mode=mode)
+        if padding_mode == 'constant':
+            img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right)), mode=padding_mode, constant_values=fill)
+        else:
+            img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right)), mode=padding_mode)
     if img.ndim == 3:
-        img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)), mode=mode)
-    
+        if padding_mode == 'constant':
+            img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)), mode=padding_mode, constant_values=fill)
+        else:
+            img = np.pad(img, ((pad_top, pad_bottom), (pad_left, pad_right), (0, 0)), mode=padding_mode)
     return img
 
 
@@ -281,8 +279,11 @@ def crop(img, top, left, height, width):
         raise ValueError('the input left, top, width, height should be greater than 0'
             'but got left={}, top={} width={} height={}'.format(left, top, width, height)
         )
-
-    if (left+width) > img.width or (top+height) > img.height:
+    if img.ndim == 2:
+        img_height, img_width = img.shape
+    else:
+        img_height, img_width, _ = img.shape
+    if (left+width) > img_width or (top+height) > img_height:
         raise ValueError('the input crop width and height should be small or \
          equal to image width and height. ')
 
@@ -334,6 +335,9 @@ def hflip(img):
 
 def vflip(img):
     return cv2.flip(img, 1)
+
+def flip(img, flip_code):
+    return cv2.flip(img, flip_code)
 
 def adjust_brightness():
     pass
