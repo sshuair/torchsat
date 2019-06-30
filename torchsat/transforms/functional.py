@@ -182,6 +182,70 @@ def gaussian_blur(img, kernel_size):
     return cv2.GaussianBlur(img, (kernel_size, kernel_size), sigmaX=0)
 
 
+def adjust_brightness(img, value=0):
+    if img.dtype in [np.float, np.float32, np.float64, np.float128]:
+        dtype_min, dtype_max = 0, 1
+        dtype = np.float32
+    else:
+        dtype_min = np.iinfo(img.dtype).min
+        dtype_max = np.iinfo(img.dtype).max
+        dtype = np.iinfo(img.dtype)
+    
+    result = np.clip(img.astype(np.float)+value, dtype_min, dtype_max).astype(dtype)
+    
+    return result
+    
+
+def adjust_contrast(img, factor):
+    if img.dtype in [np.float, np.float32, np.float64, np.float128]:
+        dtype_min, dtype_max = 0, 1
+        dtype = np.float32
+    else:
+        dtype_min = np.iinfo(img.dtype).min
+        dtype_max = np.iinfo(img.dtype).max
+        dtype = np.iinfo(img.dtype)
+    
+    result = np.clip(img.astype(np.float)*factor, dtype_min, dtype_max).astype(dtype)
+    
+    return result
+
+def adjust_saturation():
+    # TODO
+    pass
+
+def adjust_hue():
+    # TODO
+    pass
+
+
+
+def to_grayscale(img, output_channels=1):
+    """convert input ndarray image to gray sacle image.
+    
+    Arguments:
+        img {ndarray} -- the input ndarray image
+    
+    Keyword Arguments:
+        output_channels {int} -- output gray image channel (default: {1})
+    
+    Returns:
+        ndarray -- gray scale ndarray image
+    """
+    if img.ndim == 2:
+        gray_img = img
+    elif img.shape[2] == 3:
+        gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    else:
+        gray_img = np.mean(img, axis=2)
+        gray_img = gray_img.astype(img.dtype)
+
+    if output_channels != 1:
+        gray_img = np.tile(gray_img, (output_channels, 1, 1))
+        gray_img = np.transpose(gray_img, [1,2,0])
+        
+    return gray_img
+
+
 def shift(img, top, left):
     (h, w) = img.shape[0:2]
     matrix = np.float32([[1, 0, left], [0, 1, top]])
@@ -338,48 +402,6 @@ def vflip(img):
 
 def flip(img, flip_code):
     return cv2.flip(img, flip_code)
-
-def adjust_brightness():
-    pass
-
-def adjust_contrast():
-    pass
-
-def adjust_saturation():
-    pass
-
-def adjust_hue():
-    pass
-
-def adjust_gamma():
-    pass
-
-
-def to_grayscale(img, output_channels=1):
-    """convert input ndarray image to gray sacle image.
-    
-    Arguments:
-        img {ndarray} -- the input ndarray image
-    
-    Keyword Arguments:
-        output_channels {int} -- output gray image channel (default: {1})
-    
-    Returns:
-        ndarray -- gray scale ndarray image
-    """
-    if img.ndim == 2:
-        gray_img = img
-    elif img.shape[2] == 3:
-        gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    else:
-        gray_img = np.mean(img, axis=2)
-        gray_img = gray_img.astype(img.dtype)
-
-    if output_channels != 1:
-        gray_img = np.tile(gray_img, (output_channels, 1, 1))
-        gray_img = np.transpose(gray_img, [1,2,0])
-        
-    return gray_img
 
 
 def elastic_transform(image, alpha, sigma, alpha_affine, interpolation=cv2.INTER_LINEAR,

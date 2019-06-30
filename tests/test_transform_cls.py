@@ -1,4 +1,5 @@
 from pathlib import Path
+import math
 
 import numpy as np
 import pytest
@@ -106,6 +107,46 @@ def test_RandomNoise(fp):
         ])(img)
         assert result.shape == img.shape
         assert result.dtype == img.dtype
+
+
+@pytest.mark.parametrize('fp', tiff_files+jpeg_files)
+def test_RandomBrightness(fp):
+    img = read_img(fp)
+    result = transforms_cls.Compose([
+        transforms_cls.RandomBrightness()
+    ])(img)
+    assert result.shape == img.shape
+    assert result.dtype == img.dtype
+
+    result = transforms_cls.Compose([
+        transforms_cls.RandomBrightness(max_value=10)
+    ])(img)
+    assert result.shape == img.shape
+    assert result.dtype == img.dtype
+    if result.ndim == 2:
+        assert abs(float(result[0,0]) - float(img[0,0])) <=10
+    else:
+        assert abs(float(result[0,0,0]) - float(img[0,0,0])) <=10
+
+
+@pytest.mark.parametrize('fp', tiff_files+jpeg_files)
+def test_RandomContrast(fp):
+    img = read_img(fp)
+    result = transforms_cls.Compose([
+        transforms_cls.RandomContrast()
+    ])(img)
+    assert result.shape == img.shape
+    assert result.dtype == img.dtype
+
+    result = transforms_cls.Compose([
+        transforms_cls.RandomContrast(max_factor=1.2)
+    ])(img)
+    assert result.shape == img.shape
+    assert result.dtype == img.dtype
+    if result.ndim == 2:
+        assert abs(float(result[0,0]) / float(img[0,0])) <=1.2
+    else:
+        assert abs(float(result[0,0,0]) / float(img[0,0,0])) <=1.2
 
 
 @pytest.mark.parametrize('fp', tiff_files+jpeg_files)

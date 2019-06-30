@@ -1,5 +1,6 @@
 import numbers
 import random
+import collections
 
 import cv2
 from PIL import Image
@@ -153,6 +154,27 @@ class RandomNoise(object):
         self.percent = percent
     def __call__(self, img):
         return F.noise(img, self.mode, self.percent)
+
+class RandomBrightness(object):
+    def __init__(self, max_value=0):
+        if isinstance(max_value, numbers.Number):
+            self.value = random.uniform(-max_value, max_value)
+        if isinstance(max_value, collections.Iterable) and len(max_value)==2:
+            self.value = random.uniform(max_value[0], max_value[1])
+    
+    def __call__(self, img):
+        return F.adjust_brightness(img, self.value)
+
+
+class RandomContrast(object):
+    def __init__(self, max_factor=0):
+        if isinstance(max_factor, numbers.Number):
+            self.factor = random.uniform(-max_factor, max_factor)
+        if isinstance(max_factor, collections.Iterable) and len(max_factor)==2:
+            self.factor = random.uniform(max_factor[0], max_factor[1])
+    
+    def __call__(self, img):
+        return F.adjust_contrast(img, self.factor)
 
 
 class RandomShift(object):
