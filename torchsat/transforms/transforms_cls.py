@@ -1,18 +1,18 @@
+import collections
 import numbers
 import random
-import collections
 
 import cv2
-from PIL import Image
 import numpy as np
+from PIL import Image
 
 from . import functional as F
 
-__all__ = ["Compose", "ToTensor", "ToPILImage", "Normalize", "Resize", "CenterCrop", "Pad",
-           "Lambda", "RandomCrop", "RandomHorizontalFlip", "RandomVerticalFlip", 
-           "RandomResizedCrop", "RandomRotation",
-           "AffineTransformation",  "RandomAffine", "Grayscale",
-           'RandomShift', 'PieceTransform']
+__all__ = ["Compose", "Lambda", "ToTensor", "Normalize", "ToGray", "GaussianBlur",
+           "RandomNoise", "RandomBrightness", "RandomContrast", "RandomShift", 
+           "RandomRotation", "Resize", "Pad", "CenterCrop", "RandomCrop",
+            "RandomHorizontalFlip", "RandomVerticalFlip", "RandomFlip",
+           "RandomResizedCrop", "ElasticTransform",]
 
 
 class Compose(object):
@@ -453,4 +453,3 @@ class ElasticTransform(object):
         return F.elastic_transform(img, self.alpha, self.sigma, self.alpha_affine, self.interpolation,
                                    self.border_mode, np.random.RandomState(self.random_state),
                                    self.approximate)
-

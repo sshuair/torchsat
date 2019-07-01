@@ -33,16 +33,13 @@ Pixel-level transforms only change the input image and will leave any additional
 
 | Transform            | Image  |  masks | BBoxes |
 | -------------------- | :---:  |  :---: | :----: |
-| ToTensor             |   ✓    |  /     |   /    |
-| Normalize            |   ✓    |  /     |   /    |
-| ToGray               |   ✓    |  /     |   /    |
-| GaussianBlur         |   ✓    |  /     |   /    |
-| RandomNoise          |   ✓    |  /     |   /    |
-| RandomBrightness     |   TODO |  /     |   /    |
-| RandomContrast       |   TODO |  /     |   /    |
-| RandomGamma          |   TODO |  /     |   /    |
-| RandomSigmoid        |   TODO |  /     |   /    |
-
+| ToTensor             |   ✓    |  ✓     |       |
+| Normalize            |   ✓    |  ✓     |       |
+| ToGray               |   ✓    |  ✓     |       |
+| GaussianBlur         |   ✓    |  ✓     |       |
+| RandomNoise          |   ✓    |  ✓     |       |
+| RandomBrightness     |   ✓    |  ✓     |       |
+| RandomContrast       |   ✓    |  ✓     |       |
 
 ### spatial-level
 Spatial-level transforms will simultaneously change both an input image as well as additional targets such as masks, bounding boxes. It support all channel images.
@@ -53,7 +50,7 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | Pad                  |   ✓   |   ✓   |        |
 | RandomHorizontalFlip |   ✓   |   ✓   |        |
 | RandomVerticalFlip   |   ✓   |   ✓   |        |
-| RandomFlip           |   ✓   |   x   |        |
+| RandomFlip           |   ✓   |   ✓   |        |
 | CenterCrop           |   ✓   |   ✓   |        |
 | RandomCrop           |   ✓   |   ✓   |        |
 | RandomResizedCrop    |   ✓   |   ✓   |        |
@@ -62,13 +59,13 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | RandomShift          |   ✓   |   ✓   |        |
 
 
-
 ## Dataloader
 ### Classification
-- Sat
-- patternnet
+- [SAT-4 and SAT-6 airborne datasets](https:✓csc.lsu.edu✓~saikat✓deepsat✓)
+- [EuroSat](http:✓madm.dfki.de✓downloads)
+- [PatternNet](https:✓sites.google.com✓view✓zhouwx✓dataset)
 - NWPU_redisc45
-- EuroSat
+
 
 ### Sementic Segmentation
 
@@ -79,11 +76,15 @@ Spatial-level transforms will simultaneously change both an input image as well 
 
 ## Models
 ### Classification
+All models support multi-channels as input (e.g. 8 channels).
+   - AlexNet
+   - VGG
+   - ResNet
+   - DenseNet
+   - Inception
 
 ### Sementic Segmentation
-
 
 ### Object Detection
 
 ### Instance Segmentation
-
