@@ -3,6 +3,7 @@ import numbers
 import random
 
 from PIL import Image
+import numpy as np
 import cv2
 import torch
 
@@ -140,20 +141,6 @@ class RandomContrast(object):
 
 
 class RandomShift(object):
-    def __init__(self, max_percent=0.4):
-        self.max_percent = max_percent
-
-    def __call__(self, img, mask):
-        height, width = img.shape[0:2]
-        max_top = int(height * self.max_percent)
-        max_left = int(width * self.max_percent)
-        top = random.randint(-max_top, max_top)
-        left = random.randint(-max_left, max_left)
-
-        return F.shift(img, top, left), F.shift(mask, top, left)
-
-
-class RandomShift(object):
     """random shift the ndarray with value or some percent.
     
     Args:
@@ -165,14 +152,14 @@ class RandomShift(object):
     def __init__(self, max_percent=0.4):
         self.max_percent = max_percent
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         height, width = img.shape[0:2]
         max_top = int(height * self.max_percent)
         max_left = int(width * self.max_percent)
         top = random.randint(-max_top, max_top)
         left = random.randint(-max_left, max_left)
 
-        return F.shift(img, top, left)
+        return F.shift(img, top, left), F.shift(mask, top, left)
 
 
 class RandomRotation(object):
@@ -201,9 +188,9 @@ class RandomRotation(object):
             self.degrees = degrees
         self.center = center
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         angle = random.uniform(self.degrees[0], self.degrees[1])
-        return F.rotate(img, angle, self.center)
+        return F.rotate(img, angle, self.center), F.rotate(mask, angle, self.center)
 
 
 class Resize(object):
@@ -228,8 +215,8 @@ class Resize(object):
     def __init__(self, size, interpolation=Image.BILINEAR):
         self.size = size
         self.interpolation = interpolation
-    def __call__(self, img):
-        return F.resize(img, self.size, self.interpolation)
+    def __call__(self, img, mask):
+        return F.resize(img, self.size, self.interpolation), F.resize(mask, self.size, Image.NEAREST)
 
 
 class Pad(object):
@@ -252,8 +239,12 @@ class Pad(object):
         self.fill = fill
         self.padding_mode = padding_mode
     
-    def __call__(self, img):
-        return F.pad(img, self.padding, self.fill, self.padding_mode)
+    def __call__(self, img, mask):
+        img = F.pad(img, self.padding, self.fill, self.padding_mode)
+        if self.padding_mode == 'reflect':
+            return img, F.pad(mask, self.padding, 0, self.padding_mode)
+        else:
+            return img, F.pad(mask, self.padding, 0, 'constant')
 
 
 class CenterCrop(object):
@@ -272,8 +263,8 @@ class CenterCrop(object):
     def __init__(self, out_size):
         self.out_size = out_size
     
-    def __call__(self, img):
-        return F.center_crop(img, self.out_size)
+    def __call__(self, img, mask):
+        return F.center_crop(img, self.out_size), F.center_crop(mask, self.out_size)
 
 
 class RandomCrop(object):
@@ -291,7 +282,7 @@ class RandomCrop(object):
         else:
             self.size = size
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         h, w = img.shape[0:2]
         th, tw = self.size
         if w == tw and h == tw:
@@ -300,7 +291,7 @@ class RandomCrop(object):
         top = random.randint(0, h - th)
         left = random.randint(0, w - tw)
 
-        return F.crop(img, top, left, th, tw)
+        return F.crop(img, top, left, th, tw),  F.crop(mask, top, left, th, tw)
 
 
 class RandomHorizontalFlip(object):
@@ -315,10 +306,10 @@ class RandomHorizontalFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         if random.random() < self.p:
-            return F.hflip(img)
-        return img
+            return F.hflip(img), F.hflip(mask)
+        return img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
@@ -336,10 +327,10 @@ class RandomVerticalFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         if random.random() < self.p:
-            return F.vflip(img)
-        return img
+            return F.vflip(img), F.hflip(mask)
+        return img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
@@ -357,11 +348,11 @@ class RandomFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         if random.random() < self.p:
             flip_code = random.randint(0,1)
-            return F.flip(img, flip_code)
-        return img
+            return F.flip(img, flip_code), F.flip(mask, flip_code)
+        return img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
@@ -384,7 +375,7 @@ class RandomResizedCrop(object):
         self.target_size = target_size
         self.interpolation = interpolation
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         h, w = img.shape[0:2]
         th, tw = self.crop_size
         if w == tw and h == tw:
@@ -395,8 +386,10 @@ class RandomResizedCrop(object):
 
         img = F.crop(img, top, left, th, tw)
         img = F.resize(img, self.target_size, interpolation=self.interpolation)
+        mask = F.crop(mask, top, left, th, tw)
+        mask = F.resize(mask, self.target_size, interpolation=Image.NEAREST)
 
-        return img
+        return img, mask
 
 
 class ElasticTransform(object):
@@ -425,7 +418,10 @@ class ElasticTransform(object):
         self.random_state = random_state
         self.approximate = approximate
 
-    def __call__(self, img):
+    def __call__(self, img, mask):
         return F.elastic_transform(img, self.alpha, self.sigma, self.alpha_affine, self.interpolation,
+                                   self.border_mode, np.random.RandomState(self.random_state),
+                                   self.approximate), \
+               F.elastic_transform(mask, self.alpha, self.sigma, self.alpha_affine, cv2.INTER_NEAREST ,
                                    self.border_mode, np.random.RandomState(self.random_state),
                                    self.approximate)

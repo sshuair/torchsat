@@ -28,14 +28,6 @@ jpeg_files = [
     './tests/fixtures/different-types/jpeg_3channel_uint8.png',
 ]
 
-single_channel_files = [
-    './tests/fixtures/different-types/tiff_1channel_float.tif',
-    './tests/fixtures/different-types/tiff_1channel_uint16.tif',
-    './tests/fixtures/different-types/tiff_1channel_uint8.tif',
-    './tests/fixtures/different-types/jpeg_1channel_uint8.jpeg',
-    './tests/fixtures/different-types/jpeg_1channel_uint8.png',
-]
-
 
 def read_img(fp):
     if Path(fp).suffix in ['.tif', '.tiff']:

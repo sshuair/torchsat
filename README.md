@@ -1,14 +1,13 @@
 # TorchSat (Work In Progress...)
 
-
 TorchSat is an open-source PyTorch framework for satellite imagery analysis.
 
 **Hightlight**:
-- support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
-- convenient data augmentation method for classification, sementic segmentation, object detection and instance segmentation.
-- lots of common satellite datasets loader, .
-- lots of models for satellite vision tasks, such as ResNet, PSPNet, SSD, and MaskRCNN ...
-- training script for common satellite vision tasks.
+- Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
+- Convenient data augmentation method for classification, sementic segmentation and object detection.
+- Lots of common satellite datasets loader, .
+- Lots of models for satellite vision tasks, such as ResNet, UNet, PSPNet, SSD, FasterRCNN ...
+- Training script for common satellite vision tasks.
 
 # Install
 
@@ -16,8 +15,8 @@ python setup.py install
 
 
 # How to use
-- Introduction
-- Data augmentation
+- [Introduction]()
+- [Data Augmentation]()
 - models
 - train
 
@@ -61,9 +60,9 @@ Spatial-level transforms will simultaneously change both an input image as well 
 
 ## Dataloader
 ### Classification
-- [SAT-4 and SAT-6 airborne datasets](https:✓csc.lsu.edu✓~saikat✓deepsat✓)
-- [EuroSat](http:✓madm.dfki.de✓downloads)
-- [PatternNet](https:✓sites.google.com✓view✓zhouwx✓dataset)
+- [SAT-4 and SAT-6 airborne datasets](https:/csc.lsu.edu/~saikat/deepsat/)
+- [EuroSat](http:/madm.dfki.de/downloads)
+- [PatternNet](https:/sites.google.com/view/zhouwx/dataset)
 - NWPU_redisc45
 
 
@@ -72,7 +71,6 @@ Spatial-level transforms will simultaneously change both an input image as well 
 
 ### Object Detection
 
-### Instance Segmentation
 
 ## Models
 ### Classification
@@ -84,7 +82,7 @@ All models support multi-channels as input (e.g. 8 channels).
    - Inception
 
 ### Sementic Segmentation
+    - UNet
+    - PSPNet
 
 ### Object Detection
-
-### Instance Segmentation
