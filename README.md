@@ -32,13 +32,13 @@ Pixel-level transforms only change the input image and will leave any additional
 
 | Transform            | Image  |  masks | BBoxes |
 | -------------------- | :---:  |  :---: | :----: |
-| ToTensor             |   ✓    |  ✓     |       |
-| Normalize            |   ✓    |  ✓     |       |
-| ToGray               |   ✓    |  ✓     |       |
-| GaussianBlur         |   ✓    |  ✓     |       |
-| RandomNoise          |   ✓    |  ✓     |       |
-| RandomBrightness     |   ✓    |  ✓     |       |
-| RandomContrast       |   ✓    |  ✓     |       |
+| ToTensor             |   ✓    |  ✓     |   ✓    |
+| Normalize            |   ✓    |  ✓     |   ✓    |
+| ToGray               |   ✓    |  ✓     |   ✓    |
+| GaussianBlur         |   ✓    |  ✓     |   ✓    |
+| RandomNoise          |   ✓    |  ✓     |   ✓    |
+| RandomBrightness     |   ✓    |  ✓     |   ✓    |
+| RandomContrast       |   ✓    |  ✓     |   ✓    |
 
 ### spatial-level
 Spatial-level transforms will simultaneously change both an input image as well as additional targets such as masks, bounding boxes. It support all channel images.
