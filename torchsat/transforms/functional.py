@@ -394,10 +394,10 @@ def resized_crop(img, top, left, height, width, size, interpolation=Image.BILINE
     img = resize(img, size, interpolation)
     return img
 
-def hflip(img):
+def vflip(img):
     return cv2.flip(img, 0)
 
-def vflip(img):
+def hflip(img):
     return cv2.flip(img, 1)
 
 def flip(img, flip_code):
@@ -452,3 +452,49 @@ def elastic_transform(image, alpha, sigma, alpha_affine, interpolation=cv2.INTER
     mapy = np.float32(y + dy)
 
     return cv2.remap(image, mapx, mapy, interpolation, borderMode=border_mode)
+
+
+def bbox_shift(bboxes, top, left):
+    pass
+
+
+def bbox_vflip(bboxes, img_height):
+    """vertical flip the bboxes
+    ...........
+    .         .
+    .         .
+   >...........<
+    .         .
+    .         .
+    ...........
+    Args:
+        bbox (ndarray): bbox ndarray [box_nums, 4]
+        flip_code (int, optional): [description]. Defaults to 0.
+    """
+    flipped = bboxes.copy()
+    flipped[...,1::2] = img_height - bboxes[...,1::2]
+    flipped = flipped[..., [0, 3, 2, 1]]
+    return flipped
+
+
+def bbox_hflip(bboxes, img_width):
+    """horizontal flip the bboxes
+          ^
+    .............
+    .     .     .
+    .     .     .
+    .     .     .
+    .     .     .
+    .............
+          ^
+    Args:
+        bbox (ndarray): bbox ndarray [box_nums, 4]
+        flip_code (int, optional): [description]. Defaults to 0.
+    """
+    flipped = bboxes.copy()
+    flipped[..., 0::2] = img_width - bboxes[...,0::2]
+    flipped = flipped[..., [2, 1, 0, 3]]
+    return flipped
+
+def bbox_resize(bboxes, img_size, target_size):
+    pass

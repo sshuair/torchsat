@@ -13,7 +13,6 @@ TorchSat is an open-source PyTorch framework for satellite imagery analysis.
 
 python setup.py install
 
-
 # How to use
 - [Introduction]()
 - [Data Augmentation]()
@@ -47,9 +46,9 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | -------------------- | :---: | :---: | :----: |
 | Resize               |   ✓   |   ✓   |        |
 | Pad                  |   ✓   |   ✓   |        |
-| RandomHorizontalFlip |   ✓   |   ✓   |        |
-| RandomVerticalFlip   |   ✓   |   ✓   |        |
-| RandomFlip           |   ✓   |   ✓   |        |
+| RandomHorizontalFlip |   ✓   |   ✓   |    ✓   |
+| RandomVerticalFlip   |   ✓   |   ✓   |    ✓   |
+| RandomFlip           |   ✓   |   ✓   |    ✓   |
 | CenterCrop           |   ✓   |   ✓   |        |
 | RandomCrop           |   ✓   |   ✓   |        |
 | RandomResizedCrop    |   ✓   |   ✓   |        |
@@ -57,6 +56,26 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | RandomRotation       |   ✓   |   ✓   |        |
 | RandomShift          |   ✓   |   ✓   |        |
 
+
+
+## Models
+### Classification
+All models support multi-channels as input (e.g. 8 channels).
+- AlexNet
+- VGG
+- ResNet
+- DenseNet
+- Inception
+
+### Sementic Segmentation
+- UNet(TODO)
+- PSPNet(TODO)
+
+### Object Detection
+
+- SSD(TODO)
+- YOLOV3(TODO)
+- FasterRCNN(TODO)
 
 ## Dataloader
 ### Classification
@@ -68,21 +87,5 @@ Spatial-level transforms will simultaneously change both an input image as well 
 
 ### Sementic Segmentation
 
-
-### Object Detection
-
-
-## Models
-### Classification
-All models support multi-channels as input (e.g. 8 channels).
-   - AlexNet
-   - VGG
-   - ResNet
-   - DenseNet
-   - Inception
-
-### Sementic Segmentation
-    - UNet
-    - PSPNet
 
 ### Object Detection

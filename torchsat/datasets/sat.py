@@ -7,7 +7,7 @@ from scipy.io import loadmat
 
 
 class SAT(data.Dataset):
-    """SAT-4 and SAT-6 datasat 
+    """SAT-4 and SAT-6 datasets
     
     Arguments:
         data {root} -- [description]

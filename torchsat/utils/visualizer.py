@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import tifffile
 import numpy as np
 
 __all__ = ['plot_img', 'plot_bbox', 'plot_mask']
@@ -27,9 +28,9 @@ def plot_img(img, channels=(1,2,3), **kwargs):
     plt.figure(figsize=(10,8))
     channels = channels if isinstance(channels, int) else [x-1 for x in channels]
     if img.ndim == 2:
-        plt.imshow(img, cmap='gray', **kwargs)
+        tifffile.imshow(img, cmap='gray', **kwargs)
     else:
-        plt.imshow(img[...,channels], **kwargs)
+        tifffile.imshow(img[...,channels], **kwargs)
 
 
 def plot_bbox(img, bboxes, channels=(1,2,3), labels=None, classes=None, **kwargs):
@@ -76,8 +77,8 @@ def plot_mask(img, mask, channels=(1,2,3), mask_alpha=0.6, **kwargs):
     """plot image with mask
     
     Args:
-        img (ndarray): the input ndarray image
-        mask (ndarray): the mask to show
+        img (ndarray): the input ndarray image.
+        mask (ndarray): the mask to show.
         channels (tuple, optional): target channel to show.. Defaults to (1,2,3).
         mask_alpha (float, optional): mask alpha. Defaults to 0.6.
         kwargs (dict, optional): the plt.imshow kwargs.
@@ -89,4 +90,4 @@ def plot_mask(img, mask, channels=(1,2,3), mask_alpha=0.6, **kwargs):
     else:
         plt.imshow(img[...,channels], **kwargs)
     masked_data = np.ma.masked_where(mask==0, mask)
-    plt.imshow(masked_data, alpha=mask_alpha, cmap='jet')
+    plt.imshow(masked_data, alpha=mask_alpha, cmap='viridis')
