@@ -496,5 +496,41 @@ def bbox_hflip(bboxes, img_width):
     flipped = flipped[..., [2, 1, 0, 3]]
     return flipped
 
+
 def bbox_resize(bboxes, img_size, target_size):
-    pass
+    """resize the bbox
+    
+    Args:
+        bboxes (ndarray): bbox ndarray [box_nums, 4]
+        img_size (tuple): the image height and width
+        target_size (int, or tuple): the target bbox size. 
+                Int or Tuple, if tuple the shape should be (height, width)
+    """
+    if isinstance(target_size, numbers.Number):
+        target_size = (target_size, target_size)
+
+    ratio_height = target_size[0]/img_size[0]
+    ratio_width = target_size[1]/img_size[1]
+
+    return bboxes[...,]*[ratio_width,ratio_height,ratio_width,ratio_height]
+
+
+def bbox_crop(bboxes, top, left, height, width):
+    '''crop bbox 
+    
+    Arguments:
+        img {ndarray} -- image to be croped
+        top {int} -- top size
+        left {int} -- left size 
+        height {int} -- croped height
+        width {int} -- croped width
+    '''
+    croped_bboxes = bboxes.copy()
+
+    right = width + left
+    bottom = height + top
+    
+    croped_bboxes[..., 0::2] = bboxes[..., 0::2].clip(left, right) - left
+    croped_bboxes[..., 1::2] = bboxes[..., 1::2].clip(top, bottom) - top
+
+    return croped_bboxes

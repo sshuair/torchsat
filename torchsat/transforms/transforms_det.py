@@ -243,30 +243,31 @@ class RandomContrast(object):
 #         return F.rotate(img, angle, self.center)
 
 
-# class Resize(object):
-#     """resize the image
-#     Args:
-#         img {ndarray} : the input ndarray image
-#         size {int, iterable} : the target size, if size is intger,  width and height will be resized to same \
-#                                 otherwise, the size should be tuple (height, width) or list [height, width]
+class Resize(object):
+    """resize the image
+    Args:
+        img {ndarray} : the input ndarray image
+        size {int, iterable} : the target size, if size is intger,  width and height will be resized to same \
+                                otherwise, the size should be tuple (height, width) or list [height, width]
                                 
     
-#     Keyword Arguments:
-#         interpolation {Image} : the interpolation method (default: {Image.BILINEAR})
+    Keyword Arguments:
+        interpolation {Image} : the interpolation method (default: {Image.BILINEAR})
     
-#     Raises:
-#         TypeError : img should be ndarray
-#         ValueError : size should be intger or iterable vaiable and length should be 2.
+    Raises:
+        TypeError : img should be ndarray
+        ValueError : size should be intger or iterable vaiable and length should be 2.
     
-#     Returns:
-#         img (ndarray) : resize ndarray image
-#     """
+    Returns:
+        img (ndarray) : resize ndarray image
+    """
     
-#     def __init__(self, size, interpolation=Image.BILINEAR):
-#         self.size = size
-#         self.interpolation = interpolation
-#     def __call__(self, img):
-#         return F.resize(img, self.size, self.interpolation)
+    def __init__(self, size, interpolation=Image.BILINEAR):
+        self.size = size
+        self.interpolation = interpolation
+    def __call__(self, img, bboxes, labels):
+        return F.resize(img, self.size, self.interpolation), \
+               F.bbox_resize(bboxes, img.shape[0:2], self.size), labels
 
 
 # class Pad(object):
@@ -293,51 +294,82 @@ class RandomContrast(object):
 #         return F.pad(img, self.padding, self.fill, self.padding_mode)
 
 
-# class CenterCrop(object):
-#     '''crop image
+class CenterCrop(object):
+    '''crop image
     
-#     Args:
-#         img {ndarray}: input image
-#         output_size {number or sequence}: the output image size. if sequence, should be [height, width]
+    Args:
+        img {ndarray}: input image
+        output_size {number or sequence}: the output image size. if sequence, should be [height, width]
     
-#     Raises:
-#         ValueError: the input image is large than original image.
+    Raises:
+        ValueError: the input image is large than original image.
     
-#     Returns:
-#         ndarray: return croped ndarray image.
-#     '''
-#     def __init__(self, out_size):
-#         self.out_size = out_size
-    
-#     def __call__(self, img):
-#         return F.center_crop(img, self.out_size)
+    Returns:
+        ndarray: return croped ndarray image.
+    '''
+    def __init__(self, out_size):
+        self.out_size = out_size
+        if isinstance(self.out_size, numbers.Number):
+            self.out_size = (int(self.out_size), int(self.out_size))
+
+    def __call__(self, img, bboxes, labels):
+        if img.ndim == 2:
+            img_height, img_width = img.shape
+        else:
+            img_height, img_width, _ = img.shape
+
+        if self.out_size[0] > img_height or self.out_size[1] > img_width:
+            raise ValueError('the self.out_size should not greater than image size, but got {}'.format(self.out_size))
+        
+        target_height, target_width = self.out_size
+
+        top = int(round((img_height - target_height)/2))
+        left = int(round((img_width - target_width)/2))
+
+        bboxes = F.bbox_crop(bboxes, top, left, target_height, target_width)
+
+        # find the outside boxes and remove them
+        x_check = bboxes[...,0]==bboxes[...,2] # x direction(width)
+        y_check = bboxes[...,1]==bboxes[...,3] # y direction(height)
+        bboxes = bboxes[~(x_check | y_check)]
+        labels = np.array(labels)[~(x_check | y_check)].tolist()
+
+        return F.center_crop(img, self.out_size), bboxes, labels
 
 
-# class RandomCrop(object):
-#     """random crop the input ndarray image
+class RandomCrop(object):
+    """random crop the input ndarray image
     
-#     Args:
-#         size (int, sequence): th output image size, if sequeue size should be [height, width]
+    Args:
+        size (int, sequence): th output image size, if sequeue size should be [height, width]
     
-#     Returns:
-#         ndarray:  return random croped ndarray image.
-#     """
-#     def __init__(self, size):
-#         if isinstance(size, numbers.Number):
-#             self.size = (size, size)
-#         else:
-#             self.size = size
+    Returns:
+        ndarray:  return random croped ndarray image.
+    """
+    def __init__(self, size):
+        if isinstance(size, numbers.Number):
+            self.size = (size, size)
+        else:
+            self.size = size
 
-#     def __call__(self, img):
-#         h, w = img.shape[0:2]
-#         th, tw = self.size
-#         if w == tw and h == tw:
-#             return img
+    def __call__(self, img, bboxes, labels):
+        h, w = img.shape[0:2]
+        th, tw = self.size
+        if w == tw and h == tw:
+            return img
 
-#         top = random.randint(0, h - th)
-#         left = random.randint(0, w - tw)
+        top = random.randint(0, h - th)
+        left = random.randint(0, w - tw)
 
-#         return F.crop(img, top, left, th, tw)
+        bboxes = F.bbox_crop(bboxes, top, left, th, tw)
+        
+        # find the outside boxes and remove them
+        x_check = bboxes[...,0]==bboxes[...,2] # x direction(width)
+        y_check = bboxes[...,1]==bboxes[...,3] # y direction(height)
+        bboxes = bboxes[~(x_check | y_check)]
+        labels = np.array(labels)[~(x_check | y_check)].tolist()
+
+        return F.crop(img, top, left, th, tw), bboxes, labels
 
 
 class RandomHorizontalFlip(object):
@@ -407,36 +439,45 @@ class RandomFlip(object):
         return self.__class__.__name__ + '(p={})'.format(self.p)
 
 
-# class RandomResizedCrop(object):
-#     """[summary]
+class RandomResizedCrop(object):
+    """[summary]
     
-#     Args:
-#         object ([type]): [description]
+    Args:
+        object ([type]): [description]
     
-#     Returns:
-#         [type]: [description]
-#     """
-#     def __init__(self, crop_size, target_size, interpolation=Image.BILINEAR):
-#         if isinstance(crop_size, numbers.Number):
-#             self.crop_size = (crop_size, crop_size)
-#         else:
-#             self.crop_size = crop_size
-#         self.target_size = target_size
-#         self.interpolation = interpolation
+    Returns:
+        [type]: [description]
+    """
+    def __init__(self, crop_size, target_size, interpolation=Image.BILINEAR):
+        if isinstance(crop_size, numbers.Number):
+            self.crop_size = (crop_size, crop_size)
+        else:
+            self.crop_size = crop_size
+        self.target_size = target_size
+        self.interpolation = interpolation
 
-#     def __call__(self, img):
-#         h, w = img.shape[0:2]
-#         th, tw = self.crop_size
-#         if w == tw and h == tw:
-#             return img
+    def __call__(self, img, bboxes, labels):
+        h, w = img.shape[0:2]
+        th, tw = self.crop_size
+        if w == tw and h == tw:
+            return img, bboxes, labels
 
-#         top = random.randint(0, h - th)
-#         left = random.randint(0, w - tw)
+        top = random.randint(0, h - th)
+        left = random.randint(0, w - tw)
 
-#         img = F.crop(img, top, left, th, tw)
-#         img = F.resize(img, self.target_size, interpolation=self.interpolation)
+        img = F.crop(img, top, left, th, tw)
+        img = F.resize(img, self.target_size, interpolation=self.interpolation)
 
-#         return img
+        bboxes = F.bbox_crop(bboxes, top, left, th, tw)
+        # find the outside boxes and remove them
+        x_check = bboxes[...,0]==bboxes[...,2] # x direction(width)
+        y_check = bboxes[...,1]==bboxes[...,3] # y direction(height)
+        bboxes = bboxes[~(x_check | y_check)]
+        labels = np.array(labels)[~(x_check | y_check)].tolist()
+
+        bboxes = F.bbox_resize(bboxes, (th, tw), self.target_size)
+
+        return img, bboxes, labels
 
 
 # class ElasticTransform(object):

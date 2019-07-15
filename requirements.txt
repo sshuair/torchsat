@@ -4,5 +4,5 @@ pillow
 six
 tifffile
 opencv-python
-torch
+torch>=1.0.0
 torchvision

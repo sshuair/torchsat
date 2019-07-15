@@ -14,8 +14,8 @@ TorchSat is an open-source PyTorch framework for satellite imagery analysis.
 python setup.py install
 
 # How to use
-- [Introduction]()
-- [Data Augmentation]()
+- Introduction
+- [Data Augmentation](exsamples/data-augmentation.ipynb)
 - models
 - train
 
@@ -44,14 +44,14 @@ Spatial-level transforms will simultaneously change both an input image as well 
 
 | Transform            | Image | masks | BBoxes |
 | -------------------- | :---: | :---: | :----: |
-| Resize               |   ✓   |   ✓   |        |
+| Resize               |   ✓   |   ✓   |   ✓    |
 | Pad                  |   ✓   |   ✓   |        |
-| RandomHorizontalFlip |   ✓   |   ✓   |    ✓   |
-| RandomVerticalFlip   |   ✓   |   ✓   |    ✓   |
-| RandomFlip           |   ✓   |   ✓   |    ✓   |
-| CenterCrop           |   ✓   |   ✓   |        |
-| RandomCrop           |   ✓   |   ✓   |        |
-| RandomResizedCrop    |   ✓   |   ✓   |        |
+| RandomHorizontalFlip |   ✓   |   ✓   |   ✓    |
+| RandomVerticalFlip   |   ✓   |   ✓   |   ✓    |
+| RandomFlip           |   ✓   |   ✓   |   ✓    |
+| CenterCrop           |   ✓   |   ✓   |   ✓    |
+| RandomCrop           |   ✓   |   ✓   |   ✓    |
+| RandomResizedCrop    |   ✓   |   ✓   |   ✓    |
 | ElasticTransform     |   ✓   |   ✓   |        |
 | RandomRotation       |   ✓   |   ✓   |        |
 | RandomShift          |   ✓   |   ✓   |        |
