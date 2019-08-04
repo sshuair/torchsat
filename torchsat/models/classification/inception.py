@@ -2,7 +2,7 @@ from collections import namedtuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.model_zoo as model_zoo
+from ..utils import load_state_dict_from_url
 
 
 __all__ = ['Inception3', 'inception_v3']
@@ -13,10 +13,10 @@ model_urls = {
     'inception_v3_google': 'https://download.pytorch.org/models/inception_v3_google-1a9a5a14.pth',
 }
 
-_InceptionOuputs = namedtuple('InceptionOuputs', ['logits', 'aux_logits'])
+_InceptionOutputs = namedtuple('InceptionOutputs', ['logits', 'aux_logits'])
 
 
-def inception_v3(pretrained=False, **kwargs):
+def inception_v3(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
     r"""Inception v3 model architecture from
     `"Rethinking the Inception Architecture for Computer Vision" <http://arxiv.org/abs/1512.00567>`_.
     .. note::
@@ -24,13 +24,14 @@ def inception_v3(pretrained=False, **kwargs):
         N x 3 x 299 x 299, so ensure your images are sized accordingly.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
         aux_logits (bool): If True, add an auxiliary branch that can improve training.
             Default: *True*
         transform_input (bool): If True, preprocesses the input according to the method with which it
             was trained on ImageNet. Default: *False*
     """
-    if pretrained and 'in_channels' in kwargs and kwargs['in_channels'] != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(kwargs['in_channels']))
+    if pretrained and in_channels != 3:
+        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
     
     if pretrained:
         if 'transform_input' not in kwargs:
@@ -41,18 +42,22 @@ def inception_v3(pretrained=False, **kwargs):
         else:
             original_aux_logits = True
         model = Inception3(**kwargs)
-        model.load_state_dict(model_zoo.load_url(model_urls['inception_v3_google']))
+        state_dict = load_state_dict_from_url(model_urls['inception_v3_google'],
+                                              progress=progress)
+        model.load_state_dict(state_dict)
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
         if not original_aux_logits:
             model.aux_logits = False
             del model.AuxLogits
-        return model
+    else:
+        model = Inception3(num_classes, in_channels=in_channels, **kwargs)
 
-    return Inception3(**kwargs)
+    return model
 
 
 class Inception3(nn.Module):
 
-    def __init__(self, in_channels=3, num_classes=1000, aux_logits=True, transform_input=False):
+    def __init__(self, num_classes=1000, in_channels=3, aux_logits=True, transform_input=False):
         super(Inception3, self).__init__()
         self.aux_logits = aux_logits
         self.transform_input = transform_input
@@ -140,12 +145,12 @@ class Inception3(nn.Module):
         # N x 2048 x 1 x 1
         x = F.dropout(x, training=self.training)
         # N x 2048 x 1 x 1
-        x = x.view(x.size(0), -1)
+        x = torch.flatten(x, 1)
         # N x 2048
         x = self.fc(x)
         # N x 1000 (num_classes)
         if self.training and self.aux_logits:
-            return _InceptionOuputs(x, aux)
+            return _InceptionOutputs(x, aux)
         return x
 
 
@@ -332,7 +337,7 @@ class InceptionAux(nn.Module):
         # Adaptive average pooling
         x = F.adaptive_avg_pool2d(x, (1, 1))
         # N x 768 x 1 x 1
-        x = x.view(x.size(0), -1)
+        x = torch.flatten(x, 1)
         # N x 768
         x = self.fc(x)
         # N x 1000

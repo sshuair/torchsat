@@ -1,4 +1,33 @@
 from torch import nn
+from ..utils import load_state_dict_from_url
+
+
+__all__ = ['MobileNetV2', 'mobilenet_v2']
+
+
+model_urls = {
+    'mobilenet_v2': 'https://download.pytorch.org/models/mobilenet_v2-b0353104.pth',
+}
+
+
+def _make_divisible(v, divisor, min_value=None):
+    """
+    This function is taken from the original tf repo.
+    It ensures that all layers have a channel number that is divisible by 8
+    It can be seen here:
+    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py
+    :param v:
+    :param divisor:
+    :param min_value:
+    :return:
+    """
+    if min_value is None:
+        min_value = divisor
+    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    # Make sure that round down does not go down by more than 10%.
+    if new_v < 0.9 * v:
+        new_v += divisor
+    return new_v
 
 
 class ConvBNReLU(nn.Sequential):
@@ -41,29 +70,45 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, in_channels=3, num_classes=1000, width_mult=1.0):
+    def __init__(self, num_classes=1000, in_channels=3, width_mult=1.0, inverted_residual_setting=None, round_nearest=8):
+        """
+        MobileNet V2 main class
+        Args:
+            num_classes (int): Number of classes
+            width_mult (float): Width multiplier - adjusts number of channels in each layer by this amount
+            inverted_residual_setting: Network structure
+            round_nearest (int): Round the number of channels in each layer to be a multiple of this number
+            Set to 1 to turn off rounding
+        """
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 32
         last_channel = 1280
-        inverted_residual_setting = [
-            # t, c, n, s
-            [1, 16, 1, 1],
-            [6, 24, 2, 2],
-            [6, 32, 3, 2],
-            [6, 64, 4, 2],
-            [6, 96, 3, 1],
-            [6, 160, 3, 2],
-            [6, 320, 1, 1],
-        ]
+
+        if inverted_residual_setting is None:
+            inverted_residual_setting = [
+                # t, c, n, s
+                [1, 16, 1, 1],
+                [6, 24, 2, 2],
+                [6, 32, 3, 2],
+                [6, 64, 4, 2],
+                [6, 96, 3, 1],
+                [6, 160, 3, 2],
+                [6, 320, 1, 1],
+            ]
+
+        # only check the first element, assuming user knows t,c,n,s are required
+        if len(inverted_residual_setting) == 0 or len(inverted_residual_setting[0]) != 4:
+            raise ValueError("inverted_residual_setting should be non-empty "
+                             "or a 4-element list, got {}".format(inverted_residual_setting))
 
         # building first layer
-        input_channel = int(input_channel * width_mult)
-        self.last_channel = int(last_channel * max(1.0, width_mult))
+        input_channel = _make_divisible(input_channel * width_mult, round_nearest)
+        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         features = [ConvBNReLU(in_channels, input_channel, stride=2)]
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:
-            output_channel = int(c * width_mult)
+            output_channel = _make_divisible(c * width_mult, round_nearest)
             for i in range(n):
                 stride = s if i == 0 else 1
                 features.append(block(input_channel, output_channel, stride, expand_ratio=t))
@@ -99,5 +144,23 @@ class MobileNetV2(nn.Module):
         return x
 
 
-def mobilenet_v2(pretrained=False, **kwargs):
-    return MobileNetV2(**kwargs)
+def mobilenet_v2(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    """
+    Constructs a MobileNetV2 architecture from
+    `"MobileNetV2: Inverted Residuals and Linear Bottlenecks" <https://arxiv.org/abs/1801.04381>`_.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    if pretrained and in_channels != 3:
+        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+    
+    
+    if pretrained:
+        model = MobileNetV2(**kwargs)
+        state_dict = load_state_dict_from_url(model_urls['mobilenet_v2'], progress=progress)
+        model.load_state_dict(state_dict)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
+    else:
+        model = MobileNetV2(num_classes=num_classes,in_channels=in_channels, **kwargs)
+    return model

@@ -1,6 +1,6 @@
+import torch
 import torch.nn as nn
-import torch.utils.model_zoo as model_zoo
-
+from ..utils import load_state_dict_from_url
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
@@ -41,7 +41,7 @@ class VGG(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
+        x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
 
@@ -74,7 +74,7 @@ def make_layers(cfg, in_channels=3, batch_norm=False):
     return nn.Sequential(*layers)
 
 
-cfg = {
+cfgs = {
     'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
@@ -82,128 +82,100 @@ cfg = {
 }
 
 
-def vgg11(pretrained=False, in_channels=3, **kwargs):
-    """VGG 11-layer model (configuration "A")
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-    """
+def _vgg(arch, cfg, batch_norm, pretrained, progress, num_classes, in_channels, **kwargs):
     if pretrained and in_channels != 3:
         raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+        
     if pretrained:
         kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['A'], in_channels), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg11']))
+        model = VGG(make_layers(cfgs[cfg], in_channels=3, batch_norm=batch_norm), **kwargs)
+        state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
+        model.load_state_dict(state_dict)
+        model.classifier[6] = nn.Linear(model.classifier[6].in_features, 2)
+    else:
+        model = VGG(make_layers(cfgs[cfg], in_channels=in_channels, batch_norm=batch_norm), 
+                    num_classes=num_classes, **kwargs)
     return model
 
 
-def vgg11_bn(pretrained=False, in_channels=3, **kwargs):
-    """VGG 11-layer model (configuration "A") with batch normalization
+def vgg11(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 11-layer model (configuration "A") from
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['A'], in_channels, batch_norm=True), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg11_bn']))
-    return model
+    return _vgg('vgg11', 'A', False, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg13(pretrained=False, in_channels=3, **kwargs):
-    """VGG 13-layer model (configuration "B")
+def vgg11_bn(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 11-layer model (configuration "A") with batch normalization
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['B'], in_channels), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg13']))
-    return model
+    return _vgg('vgg11_bn', 'A', True, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg13_bn(pretrained=False, in_channels=3, **kwargs):
-    """VGG 13-layer model (configuration "B") with batch normalization
+def vgg13(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 13-layer model (configuration "B")
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['B'], in_channels, batch_norm=True), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg13_bn']))
-    return model
+    return _vgg('vgg13', 'B', False, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg16(pretrained=False, in_channels=3, **kwargs):
-    """VGG 16-layer model (configuration "D")
+def vgg13_bn(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 13-layer model (configuration "B") with batch normalization
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['D'], in_channels), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg16']))
-    return model
+    return _vgg('vgg13_bn', 'B', True, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg16_bn(pretrained=False, in_channels=3, **kwargs):
-    """VGG 16-layer model (configuration "D") with batch normalization
+def vgg16(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 16-layer model (configuration "D")
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['D'], in_channels, batch_norm=True), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg16_bn']))
-    return model
+    return _vgg('vgg16', 'D', False, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg19(pretrained=False, in_channels=3, **kwargs):
-    """VGG 19-layer model (configuration "E")
+def vgg16_bn(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 16-layer model (configuration "D") with batch normalization
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['E'], in_channels), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg19']))
-    return model
+    return _vgg('vgg16_bn', 'D', True, pretrained, progress, num_classes, in_channels, **kwargs)
 
 
-def vgg19_bn(pretrained=False, in_channels=3, **kwargs):
-    """VGG 19-layer model (configuration 'E') with batch normalization
+def vgg19(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 19-layer model (configuration "E")
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+    return _vgg('vgg19', 'E', False, pretrained, progress, num_classes, in_channels, **kwargs)
 
-    if pretrained:
-        kwargs['init_weights'] = False
-    model = VGG(make_layers(cfg['E'], in_channels, batch_norm=True), **kwargs)
-    if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['vgg19_bn']))
-    return model
+
+def vgg19_bn(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
+    r"""VGG 19-layer model (configuration 'E') with batch normalization
+    `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>'_
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        progress (bool): If True, displays a progress bar of the download to stderr
+    """
+    return _vgg('vgg19_bn', 'E', True, pretrained, progress, num_classes, in_channels, **kwargs)
+
+# if __name__ == "__main__":
+    # vgg11(3, in_channels=3, pretrained=True)
