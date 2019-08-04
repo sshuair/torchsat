@@ -1,13 +1,14 @@
 # TorchSat (Work In Progress...)
 
-TorchSat is an open-source PyTorch framework for satellite imagery analysis.
+:fire:TorchSat:earth_asia: is an open-source PyTorch framework for satellite imagery analysis.
 
-**Hightlight**:
-- :rocket:Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
-- :rocket:Convenient data augmentation method for classification, sementic segmentation and object detection.
-- :rocket:Lots of common satellite datasets loader.
-- :rocket:Lots of models for satellite vision tasks, such as ResNet, UNet, PSPNet, SSD, FasterRCNN ...
-- :rocket:Training script for common satellite vision tasks.
+
+**:rocket:Hightlight**:
+-  :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
+- :yum:Convenient data augmentation method for classification, sementic segmentation and object detection.
+- :heart_eyes:Lots of models for satellite vision tasks, such as ResNet, UNet, PSPNet, SSD, FasterRCNN ...
+- :smiley:Lots of common satellite datasets loader.
+- :open_mouth:Training script for common satellite vision tasks.
 
 ## Install
 
@@ -23,7 +24,7 @@ TorchSat is an open-source PyTorch framework for satellite imagery analysis.
 
 ### Transforms
 
-We suppose all the input images and masks should be NumPy ndarray. The data shape should be **[height, width]** or **[height, width, channels]**.
+We suppose all the input images, masks and bbox should be NumPy ndarray. The data shape should be **[height, width]** or **[height, width, channels]**.
 
 #### pixel level
 
@@ -73,7 +74,7 @@ All models support multi-channels as input (e.g. 8 channels).
 #### Object Detection
 
 - SSD(TODO)
-- YOLOV3(TODO)
+- YOLO(TODO)
 - FasterRCNN(TODO)
 
 ### Dataloader
@@ -88,3 +89,9 @@ All models support multi-channels as input (e.g. 8 channels).
 
 
 #### Object Detection
+
+## Reference
+- [torchvision](https://github.com/pytorch/vision)
+
+## Note
+- If you are looking for the torchvision-enhance, please checkout the [enhance](https://github.com/sshuair/torchvision-enhance/tree/enhance) branch. But it was deprecated.
