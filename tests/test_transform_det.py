@@ -29,7 +29,7 @@ jpeg_files = [
 ]
 
 bboxes = np.array([
-    [12, 2, 417, 467],
+    [0, 2, 417, 467],
     [7, 39, 63, 94],
     [362, 24, 422, 53],
     [376, 36, 422, 81],
@@ -37,7 +37,7 @@ bboxes = np.array([
     [376, 98, 422, 210]
 ], dtype=np.float)
 
-labels = np.array([2,2,1,3], dtype=np.int64)
+labels = np.array([2,2,1,1,3,2], dtype=np.int64)
 
 def read_img(fp):
     if Path(fp).suffix in ['.tif', '.tiff']:

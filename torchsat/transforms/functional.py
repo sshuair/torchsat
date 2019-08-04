@@ -534,3 +534,21 @@ def bbox_crop(bboxes, top, left, height, width):
     croped_bboxes[..., 1::2] = bboxes[..., 1::2].clip(top, bottom) - top
 
     return croped_bboxes
+
+def bbox_pad(bboxes, padding):
+    if isinstance(padding, int):
+        pad_left = pad_right = pad_top = pad_bottom = padding
+    if isinstance(padding, collections.Iterable) and len(padding) == 2:
+        pad_left = pad_right = padding[0]
+        pad_bottom = pad_top = padding[1]
+    if isinstance(padding, collections.Iterable) and len(padding) == 4:
+        pad_left = padding[0]
+        pad_top = padding[1]
+        pad_right = padding[2]
+        pad_bottom = padding[3]
+
+    pad_bboxes = bboxes.copy()
+    pad_bboxes[..., 0::2] = bboxes[..., 0::2] + pad_left
+    pad_bboxes[..., 1::2] = bboxes[..., 1::2] + pad_top
+
+    return pad_bboxes
