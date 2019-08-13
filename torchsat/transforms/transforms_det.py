@@ -270,28 +270,28 @@ class Resize(object):
                F.bbox_resize(bboxes, img.shape[0:2], self.size), labels
 
 
-# class Pad(object):
-#     """Pad the given ndarray image with padding width.
-#     Args:
-#         padding : {int, sequence}, padding width 
-#                   If int, each border same.
-#                   If sequence length is 2, this is the padding for left/right and top/bottom.
-#                   If sequence length is 4, this is the padding for left, top, right, bottom.
-#         fill: {int, sequence}: Pixel
-#         padding_mode: str or function. contain{‘constant’,‘edge’,‘linear_ramp’,‘maximum’,‘mean’
-#             , ‘median’, ‘minimum’, ‘reflect’,‘symmetric’,‘wrap’} (default: constant)
-#     Examples:
-#         >>> transformed_img = Pad(img, 20, mode='reflect')
-#         >>> transformed_img = Pad(img, (10,20), mode='edge')
-#         >>> transformed_img = Pad(img, (10,20,30,40), mode='reflect')
-#     """
-#     def __init__(self, padding, fill=0, padding_mode='constant'):
-#         self.padding = padding
-#         self.fill = fill
-#         self.padding_mode = padding_mode
+class Pad(object):
+    """Pad the given ndarray image with padding width.
+    Args:
+        padding : {int, sequence}, padding width 
+                  If int, each border same.
+                  If sequence length is 2, this is the padding for left/right and top/bottom.
+                  If sequence length is 4, this is the padding for left, top, right, bottom.
+        fill: {int, sequence}: Pixel
+        padding_mode: str or function. contain{‘constant’,‘edge’,‘linear_ramp’,‘maximum’,‘mean’
+            , ‘median’, ‘minimum’, ‘reflect’,‘symmetric’,‘wrap’} (default: constant)
+    Examples:
+        >>> transformed_img = Pad(img, 20, mode='reflect')
+        >>> transformed_img = Pad(img, (10,20), mode='edge')
+        >>> transformed_img = Pad(img, (10,20,30,40), mode='reflect')
+    """
+    def __init__(self, padding, fill=0, padding_mode='constant'):
+        self.padding = padding
+        self.fill = fill
+        self.padding_mode = padding_mode
     
-#     def __call__(self, img):
-#         return F.pad(img, self.padding, self.fill, self.padding_mode)
+    def __call__(self, img, bboxes, labels):
+        return F.pad(img, self.padding, self.fill, self.padding_mode), F.bbox_pad(bboxes, self.padding), labels
 
 
 class CenterCrop(object):

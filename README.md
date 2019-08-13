@@ -1,24 +1,24 @@
-# TorchSat (Work In Progress...)
+# :fire: TorchSat :earth_asia: 
 
-:fire:TorchSat:earth_asia: is an open-source PyTorch framework for satellite imagery analysis.
+TorchSat is an open-source PyTorch framework for satellite imagery analysis. [WIP]
 
-
-**:rocket:Hightlight**:
+**Hightlight**
 -  :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
 - :yum:Convenient data augmentation method for classification, sementic segmentation and object detection.
-- :heart_eyes:Lots of models for satellite vision tasks, such as ResNet, UNet, PSPNet, SSD, FasterRCNN ...
-- :smiley:Lots of common satellite datasets loader.
-- :open_mouth:Training script for common satellite vision tasks.
+- :heart_eyes: Lots of models for satellite vision tasks, such as ResNet, DenseNet, UNet, PSPNet, SSD, FasterRCNN ...
+- :smiley: Lots of common satellite datasets loader.
+- :open_mouth: Training script for common satellite vision tasks.
 
 ## Install
 
 `python setup.py install`
 
 ## How to use
-- Introduction
-- [Data Augmentation](exsamples/data-augmentation.ipynb)
-- models
-- train
+- **Introduction** - 
+- **Data augmentation** - [data-augmentation.ipynb](exsamples/data-augmentation.ipynb)
+- **Data loader** 
+- **models** 
+- **train script** 
 
 ## Features
 
@@ -69,10 +69,10 @@ All models support multi-channels as input (e.g. 8 channels).
 
 #### Sementic Segmentation
 - UNet: `unet`: `unet11`, `unet101`, `unet152` (with resnet as backbone.)
-- PSPNet(TODO)
+- PSPNet(TODO):
+- DeepLab(TODO):
 
 #### Object Detection
-
 - SSD(TODO)
 - YOLO(TODO)
 - FasterRCNN(TODO)
@@ -82,7 +82,7 @@ All models support multi-channels as input (e.g. 8 channels).
 - [SAT-4 and SAT-6 airborne datasets](https:/csc.lsu.edu/~saikat/deepsat/)
 - [EuroSat](http:/madm.dfki.de/downloads)
 - [PatternNet](https:/sites.google.com/view/zhouwx/dataset)
-- NWPU_redisc45
+- [NWPU_redisc45](http://www.escience.cn/people/JunweiHan/NWPU-RESISC45.html#)
 
 
 #### Sementic Segmentation
@@ -94,4 +94,4 @@ All models support multi-channels as input (e.g. 8 channels).
 - [torchvision](https://github.com/pytorch/vision)
 
 ## Note
-- If you are looking for the torchvision-enhance, please checkout the [enhance](https://github.com/sshuair/torchvision-enhance/tree/enhance) branch. But it was deprecated.
+- If you are looking for the torchvision-enhance, please checkout the [enhance](https://github.com/sshuair/torchvision-enhance/tree/torchvision-enhance) branch. But it was deprecated.
