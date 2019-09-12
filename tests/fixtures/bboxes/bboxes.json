@@ -1,0 +1,134 @@
+{
+    "frames": [
+        {
+            "src": "jpeg_3channel_uint8.png",
+            "lines": [],
+            "rectangles": [
+                {
+                    "topLeft": {
+                        "x": 59,
+                        "y": 152
+                    },
+                    "bottomRight": {
+                        "x": 171,
+                        "y": 1
+                    },
+                    "label": "building"
+                },
+                {
+                    "topLeft": {
+                        "x": 372,
+                        "y": 129
+                    },
+                    "bottomRight": {
+                        "x": 499,
+                        "y": 19
+                    },
+                    "label": "building"
+                },
+                {
+                    "topLeft": {
+                        "x": 389,
+                        "y": 295
+                    },
+                    "bottomRight": {
+                        "x": 491,
+                        "y": 190
+                    },
+                    "label": "building"
+                },
+                {
+                    "topLeft": {
+                        "x": 358,
+                        "y": 499
+                    },
+                    "bottomRight": {
+                        "x": 471,
+                        "y": 296
+                    },
+                    "label": "building"
+                },
+                {
+                    "topLeft": {
+                        "x": 208,
+                        "y": 333
+                    },
+                    "bottomRight": {
+                        "x": 225,
+                        "y": 314
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 214,
+                        "y": 532
+                    },
+                    "bottomRight": {
+                        "x": 229,
+                        "y": 504
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 245,
+                        "y": 560
+                    },
+                    "bottomRight": {
+                        "x": 257,
+                        "y": 532
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 275,
+                        "y": 393
+                    },
+                    "bottomRight": {
+                        "x": 304,
+                        "y": 378
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 272,
+                        "y": 337
+                    },
+                    "bottomRight": {
+                        "x": 302,
+                        "y": 321
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 29,
+                        "y": 641
+                    },
+                    "bottomRight": {
+                        "x": 55,
+                        "y": 629
+                    },
+                    "label": "car"
+                },
+                {
+                    "topLeft": {
+                        "x": 97,
+                        "y": 228
+                    },
+                    "bottomRight": {
+                        "x": 126,
+                        "y": 213
+                    },
+                    "label": "car"
+                }
+            ],
+            "polygons": [],
+            "polylines": []
+        }
+    ],
+    "actions": []
+}

@@ -7,6 +7,8 @@ import numpy as np
 import torch.utils.data as data
 from PIL import Image
 
+from .utils import default_loader
+
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
 
 def has_file_allowed_extension(filename, extensions):

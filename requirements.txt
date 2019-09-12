@@ -1,8 +1,8 @@
-numpy
-scipy
-pillow
-six
-tifffile
-opencv-python
+numpy>=1.13.0
+scipy>=1.1.0
+pillow>=5.0.0
+six>=1.11.0
+tifffile>=2019.1.1
+opencv-python>=3.2.0.6
 torch>=1.0.0
-torchvision
+torchvision>=0.2.0

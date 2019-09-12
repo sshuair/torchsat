@@ -9,28 +9,45 @@ import torch
 
 from . import functional as F
 
-__all__ = ["Compose", "Lambda", "ToTensor", "Normalize", "ToGray", "GaussianBlur",
-           "RandomNoise", "RandomBrightness", "RandomContrast", "RandomShift", 
-           "RandomRotation", "Resize", "Pad", "CenterCrop", "RandomCrop",
-            "RandomHorizontalFlip", "RandomVerticalFlip", "RandomFlip",
-           "RandomResizedCrop", "ElasticTransform",]
+__all__ = [
+    "Compose",
+    "Lambda",
+    "ToTensor",
+    "Normalize",
+    "ToGray",
+    "GaussianBlur",
+    "RandomNoise",
+    "RandomBrightness",
+    "RandomContrast",
+    "RandomShift",
+    "RandomRotation",
+    "Resize",
+    "Pad",
+    "CenterCrop",
+    "RandomCrop",
+    "RandomHorizontalFlip",
+    "RandomVerticalFlip",
+    "RandomFlip",
+    "RandomResizedCrop",
+    "ElasticTransform",
+]
 
 
 class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
-    
+
     def __call__(self, img, mask):
         for t in self.transforms:
             img, mask = t(img, mask)
         return img, mask
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
         return format_string
 
 
@@ -42,21 +59,21 @@ class Lambda(object):
         return self.lambd(img, mask)
 
     def __repr__(self):
-        return self.__class__.__namme + '()'
+        return self.__class__.__namme + "()"
 
 
 class ToTensor(object):
     def __call__(self, img, mask):
 
-        return F.to_tensor(img), torch.tensor(mask,dtype=torch.long)
+        return F.to_tensor(img), torch.tensor(mask, dtype=torch.long)
 
 
 class Normalize(object):
-
     def __init__(self, mean, std, inplace=False):
         self.mean = mean
         self.std = std
         self.inplace = inplace
+
     def __call__(self, tensor, mask):
         return F.normalize(tensor, self.mean, self.std, self.inplace), mask
 
@@ -77,16 +94,20 @@ class ToGray(object):
         - If output_channels=1 : returned single channel image (height, width)
         - If output_channels>1 : returned multi-channels ndarray image (height, width, channels)
     """
+
     def __init__(self, output_channels=1):
         self.output_channels = output_channels
+
     def __call__(self, img, mask):
         return F.to_grayscale(img, self.output_channels), mask
 
 
 class RandomNoise(object):
-    def __init__(self, mode='gaussian'):
-        if mode not in ['gaussian', 'salt', 'pepper']:
-            raise ValueError('mode should be gaussian, salt, pepper, but got {}'.format(mode))
+    def __init__(self, mode="gaussian"):
+        if mode not in ["gaussian", "salt", "pepper"]:
+            raise ValueError(
+                "mode should be gaussian, salt, pepper, but got {}".format(mode)
+            )
 
     def __call__(self, img, mask):
         return F.noise(img, self.mode), mask
@@ -109,21 +130,26 @@ class RandomNoise(object):
     Returns:
         ndarray: noised ndarray image.
     """
-    def __init__(self, mode='gaussian', percent=0.02):
-        if mode not in ['gaussian', 'salt', 'pepper', 's&p']:
-            raise ValueError('mode should be gaussian, salt, pepper, but got {}'.format(mode))
+
+    def __init__(self, mode="gaussian", percent=0.02):
+        if mode not in ["gaussian", "salt", "pepper", "s&p"]:
+            raise ValueError(
+                "mode should be gaussian, salt, pepper, but got {}".format(mode)
+            )
         self.mode = mode
         self.percent = percent
+
     def __call__(self, img, mask):
         return F.noise(img, self.mode, self.percent), mask
+
 
 class RandomBrightness(object):
     def __init__(self, max_value=0):
         if isinstance(max_value, numbers.Number):
             self.value = random.uniform(-max_value, max_value)
-        if isinstance(max_value, collections.Iterable) and len(max_value)==2:
+        if isinstance(max_value, collections.Iterable) and len(max_value) == 2:
             self.value = random.uniform(max_value[0], max_value[1])
-    
+
     def __call__(self, img, mask):
         return F.adjust_brightness(img, self.value), mask
 
@@ -132,12 +158,11 @@ class RandomContrast(object):
     def __init__(self, max_factor=0):
         if isinstance(max_factor, numbers.Number):
             self.factor = random.uniform(-max_factor, max_factor)
-        if isinstance(max_factor, collections.Iterable) and len(max_factor)==2:
+        if isinstance(max_factor, collections.Iterable) and len(max_factor) == 2:
             self.factor = random.uniform(max_factor[0], max_factor[1])
-    
+
     def __call__(self, img, mask):
         return F.adjust_contrast(img, self.factor), mask
-
 
 
 class RandomShift(object):
@@ -149,6 +174,7 @@ class RandomShift(object):
     Returns:
         ndarray: return the shifted ndarray image.
     """
+
     def __init__(self, max_percent=0.4):
         self.max_percent = max_percent
 
@@ -177,6 +203,7 @@ class RandomRotation(object):
     Returns:
         ndarray: return rotated ndarray image.
     """
+
     def __init__(self, degrees, center=None):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
@@ -211,12 +238,16 @@ class Resize(object):
     Returns:
         img (ndarray) : resize ndarray image
     """
-    
+
     def __init__(self, size, interpolation=Image.BILINEAR):
         self.size = size
         self.interpolation = interpolation
+
     def __call__(self, img, mask):
-        return F.resize(img, self.size, self.interpolation), F.resize(mask, self.size, Image.NEAREST)
+        return (
+            F.resize(img, self.size, self.interpolation),
+            F.resize(mask, self.size, Image.NEAREST),
+        )
 
 
 class Pad(object):
@@ -234,21 +265,22 @@ class Pad(object):
         >>> transformed_img = Pad(img, (10,20), mode='edge')
         >>> transformed_img = Pad(img, (10,20,30,40), mode='reflect')
     """
-    def __init__(self, padding, fill=0, padding_mode='constant'):
+
+    def __init__(self, padding, fill=0, padding_mode="constant"):
         self.padding = padding
         self.fill = fill
         self.padding_mode = padding_mode
-    
+
     def __call__(self, img, mask):
         img = F.pad(img, self.padding, self.fill, self.padding_mode)
-        if self.padding_mode == 'reflect':
+        if self.padding_mode == "reflect":
             return img, F.pad(mask, self.padding, 0, self.padding_mode)
         else:
-            return img, F.pad(mask, self.padding, 0, 'constant')
+            return img, F.pad(mask, self.padding, 0, "constant")
 
 
 class CenterCrop(object):
-    '''crop image
+    """crop image
     
     Args:
         img {ndarray}: input image
@@ -259,10 +291,11 @@ class CenterCrop(object):
     
     Returns:
         ndarray: return croped ndarray image.
-    '''
+    """
+
     def __init__(self, out_size):
         self.out_size = out_size
-    
+
     def __call__(self, img, mask):
         return F.center_crop(img, self.out_size), F.center_crop(mask, self.out_size)
 
@@ -276,6 +309,7 @@ class RandomCrop(object):
     Returns:
         ndarray:  return random croped ndarray image.
     """
+
     def __init__(self, size):
         if isinstance(size, numbers.Number):
             self.size = (size, size)
@@ -291,7 +325,7 @@ class RandomCrop(object):
         top = random.randint(0, h - th)
         left = random.randint(0, w - tw)
 
-        return F.crop(img, top, left, th, tw),  F.crop(mask, top, left, th, tw)
+        return F.crop(img, top, left, th, tw), F.crop(mask, top, left, th, tw)
 
 
 class RandomHorizontalFlip(object):
@@ -303,6 +337,7 @@ class RandomHorizontalFlip(object):
     Returns:
         ndarray: return the flipped image.
     """
+
     def __init__(self, p=0.5):
         self.p = p
 
@@ -312,7 +347,7 @@ class RandomHorizontalFlip(object):
         return img, mask
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class RandomVerticalFlip(object):
@@ -324,6 +359,7 @@ class RandomVerticalFlip(object):
     Returns:
         ndarray: return the flipped image.
     """
+
     def __init__(self, p=0.5):
         self.p = p
 
@@ -333,7 +369,7 @@ class RandomVerticalFlip(object):
         return img, mask
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class RandomFlip(object):
@@ -345,17 +381,18 @@ class RandomFlip(object):
     Returns:
         ndarray: return the flipped image.
     """
+
     def __init__(self, p=0.5):
         self.p = p
 
     def __call__(self, img, mask):
         if random.random() < self.p:
-            flip_code = random.randint(0,1)
+            flip_code = random.randint(0, 1)
             return F.flip(img, flip_code), F.flip(mask, flip_code)
         return img, mask
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class RandomResizedCrop(object):
@@ -367,6 +404,7 @@ class RandomResizedCrop(object):
     Returns:
         [type]: [description]
     """
+
     def __init__(self, crop_size, target_size, interpolation=Image.BILINEAR):
         if isinstance(crop_size, numbers.Number):
             self.crop_size = (crop_size, crop_size)
@@ -408,8 +446,16 @@ class ElasticTransform(object):
         uint8, uint16 float32
     """
 
-    def __init__(self, alpha=1, sigma=50, alpha_affine=50, interpolation=cv2.INTER_LINEAR,
-                 border_mode=cv2.BORDER_REFLECT_101, random_state=None, approximate=False):
+    def __init__(
+        self,
+        alpha=1,
+        sigma=50,
+        alpha_affine=50,
+        interpolation=cv2.INTER_LINEAR,
+        border_mode=cv2.BORDER_REFLECT_101,
+        random_state=None,
+        approximate=False,
+    ):
         self.alpha = alpha
         self.alpha_affine = alpha_affine
         self.sigma = sigma
@@ -419,9 +465,26 @@ class ElasticTransform(object):
         self.approximate = approximate
 
     def __call__(self, img, mask):
-        return F.elastic_transform(img, self.alpha, self.sigma, self.alpha_affine, self.interpolation,
-                                   self.border_mode, np.random.RandomState(self.random_state),
-                                   self.approximate), \
-               F.elastic_transform(mask, self.alpha, self.sigma, self.alpha_affine, cv2.INTER_NEAREST ,
-                                   self.border_mode, np.random.RandomState(self.random_state),
-                                   self.approximate)
+        return (
+            F.elastic_transform(
+                img,
+                self.alpha,
+                self.sigma,
+                self.alpha_affine,
+                self.interpolation,
+                self.border_mode,
+                np.random.RandomState(self.random_state),
+                self.approximate,
+            ),
+            F.elastic_transform(
+                mask,
+                self.alpha,
+                self.sigma,
+                self.alpha_affine,
+                cv2.INTER_NEAREST,
+                self.border_mode,
+                np.random.RandomState(self.random_state),
+                self.approximate,
+            ),
+        )
+

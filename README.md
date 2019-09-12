@@ -1,20 +1,23 @@
 # :fire: TorchSat :earth_asia: 
 
-TorchSat is an open-source PyTorch framework for satellite imagery analysis. [WIP]
+TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
+
+>This project is still work in progress. If you want to know more about it, please refer to the [Roadmap](https://github.com/sshuair/torchsat/wiki/Roadmap)
 
 **Hightlight**
--  :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
-- :yum:Convenient data augmentation method for classification, sementic segmentation and object detection.
+- :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
+- :yum: Convenient data augmentation method for classification, sementic segmentation and object detection.
 - :heart_eyes: Lots of models for satellite vision tasks, such as ResNet, DenseNet, UNet, PSPNet, SSD, FasterRCNN ...
 - :smiley: Lots of common satellite datasets loader.
 - :open_mouth: Training script for common satellite vision tasks.
 
 ## Install
 
-`python setup.py install`
+`python3 setup.py install`
 
 ## How to use
 - **Introduction** - 
+- **Classification tutorial** - 
 - **Data augmentation** - [data-augmentation.ipynb](exsamples/data-augmentation.ipynb)
 - **Data loader** 
 - **models** 
@@ -22,7 +25,7 @@ TorchSat is an open-source PyTorch framework for satellite imagery analysis. [WI
 
 ## Features
 
-### Transforms
+### Data augmentation
 
 We suppose all the input images, masks and bbox should be NumPy ndarray. The data shape should be **[height, width]** or **[height, width, channels]**.
 
@@ -68,14 +71,8 @@ All models support multi-channels as input (e.g. 8 channels).
 - MobileNet: `mobilenet_v2`
 
 #### Sementic Segmentation
-- UNet: `unet`: `unet11`, `unet101`, `unet152` (with resnet as backbone.)
-- PSPNet(TODO):
-- DeepLab(TODO):
+- UNet: `unet`: `unet34`, `unet101`, `unet152` (with resnet as backbone.)
 
-#### Object Detection
-- SSD(TODO)
-- YOLO(TODO)
-- FasterRCNN(TODO)
 
 ### Dataloader
 #### Classification
@@ -85,10 +82,9 @@ All models support multi-channels as input (e.g. 8 channels).
 - [NWPU_redisc45](http://www.escience.cn/people/JunweiHan/NWPU-RESISC45.html#)
 
 
-#### Sementic Segmentation
+## Showcase
+If you extend this model to other datasets or build projects that use it, we'd love to hear from you.
 
-
-#### Object Detection
 
 ## Reference
 - [torchvision](https://github.com/pytorch/vision)

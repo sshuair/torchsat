@@ -1,4 +1,21 @@
+import os
+import six
+from PIL import Image
 import numpy as np
+from torch.utils.model_zoo import tqdm
+
+
+def gen_bar_updater():
+    pbar = tqdm(total=None)
+
+    def bar_update(count, block_size, total_size):
+        if pbar.total is None and total_size:
+            pbar.total = total_size
+        progress_bytes = count * block_size
+        pbar.update(progress_bytes - pbar.n)
+
+    return bar_update
+
 
 def download_url(url, root, filename=None, md5=None):
     """Download a file from a url and place it in root.
@@ -15,10 +32,10 @@ def download_url(url, root, filename=None, md5=None):
         filename = os.path.basename(url)
     fpath = os.path.join(root, filename)
 
-    makedir_exist_ok(root)
+    os.makedirs(root, exist_ok=True)
 
     # downloads file
-    if os.path.isfile(fpath) and check_integrity(fpath, md5):
+    if os.path.isfile(fpath):
         print('Using downloaded and verified file: ' + fpath)
     else:
         try:
@@ -56,6 +73,7 @@ def pil_loader(path):
         img = Image.open(f).convert('RGB')
         return np.array(img)
 
+
 def accimage_loader(path):
     import accimage
     try:
@@ -63,6 +81,7 @@ def accimage_loader(path):
     except IOError:
         # Potentially a decoding problem, fall back to PIL.Image
         return pil_loader(path)
+
 
 def default_loader(path):
     from torchvision import get_image_backend
