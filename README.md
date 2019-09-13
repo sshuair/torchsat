@@ -1,5 +1,10 @@
 # :fire: TorchSat :earth_asia: 
 
+[![Actions Status](https://github.com/sshuair/torchsat/workflows/pytest/badge.svg)](https://github.com/sshuair/torchsat/actions)
+[![GitHub stars](https://img.shields.io/github/stars/sshuair/torchsat)](https://github.com/sshuair/torchsat/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sshuair/torchsat)](https://github.com/sshuair/torchsat/network)
+[![GitHub license](https://img.shields.io/github/license/sshuair/torchsat)](https://github.com/sshuair/torchsat/blob/master/LICENSE)
+
 TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
 
 >This project is still work in progress. If you want to know more about it, please refer to the [Roadmap](https://github.com/sshuair/torchsat/wiki/Roadmap)
