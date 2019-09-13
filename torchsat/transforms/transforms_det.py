@@ -19,8 +19,6 @@ __all__ = [
     "RandomNoise",
     "RandomBrightness",
     "RandomContrast",
-    "RandomShift",
-    "RandomRotation",
     "Resize",
     "Pad",
     "CenterCrop",
@@ -29,7 +27,6 @@ __all__ = [
     "RandomVerticalFlip",
     "RandomFlip",
     "RandomResizedCrop",
-    "ElasticTransform",
 ]
 
 # 模型输入参数
