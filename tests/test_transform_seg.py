@@ -266,7 +266,7 @@ def test_RandomCrop(fp):
     mask = read_img(mask_file)
     result_img, result_mask = transforms_seg.RandomCrop(111)(img, mask)
     assert result_mask.dtype == mask.dtype
-    assert result_mask.shape[0:2] == (111,111)
+    assert result_mask.shape[0:2] == (111, 111)
 
     result_img, result_mask = transforms_seg.RandomCrop((100, 200))(img, mask)
     assert result_mask.dtype == mask.dtype
@@ -282,10 +282,10 @@ def test_RandomHorizontalFlip(fp):
     assert result_mask.shape[0:2] == mask.shape[0:2]
     if result_mask.ndim == 2:
         height, width = mask.shape
-        assert result_mask[height-1,0] == mask[0,0]
+        assert result_mask[0,width-31] == mask[0,30]
     else:
         height, width, depth = mask.shape
-        assert (result_mask[height-1,0,:] == mask[0,0,:]).any() == True
+        assert (result_mask[0,width-31,:] == mask[0,30,:]).any() == True
 
     # tensor
     result_img, result_mask = transforms_seg.Compose([
@@ -305,10 +305,10 @@ def test_RandomVerticalFlip(fp):
     assert result_mask.shape[0:2] == mask.shape[0:2]
     if result_mask.ndim == 2:
         height, width = mask.shape
-        assert result_mask[0,width-1] == mask[0,0]
+        assert result_mask[height-1,30] == mask[0,30]
     else:
         height, width, depth = mask.shape
-        assert (result_mask[0,width-1,:] == mask[0,0,:]).any() == True
+        assert (result_mask[height-1,30,:] == mask[0,30,:]).any() == True
 
     # tensor
     result_img, result_mask = transforms_seg.Compose([

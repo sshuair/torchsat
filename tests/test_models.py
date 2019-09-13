@@ -14,7 +14,7 @@ def test_classification_models(model_name):
     assert clss.__dict__[model_name](3, in_channels=2,  pretrained=False)
     assert clss.__dict__[model_name](4, in_channels=3,  pretrained=False)
     assert clss.__dict__[model_name](5, in_channels=7,  pretrained=False)
-    assert clss.__dict__[model_name](6, in_channels=3,  pretrained=True)
+    assert clss.__dict__[model_name](6, in_channels=3,  pretrained=False)
     with pytest.raises(ValueError):
         clss.__dict__[model_name](2, in_channels=4,  pretrained=True)
     
@@ -39,7 +39,7 @@ def test_segmentation_models(model_name):
     assert seg.__dict__[model_name](3, in_channels=2,  pretrained=False)
     assert seg.__dict__[model_name](4, in_channels=3,  pretrained=False)
     assert seg.__dict__[model_name](5, in_channels=7,  pretrained=False)
-    assert seg.__dict__[model_name](6, in_channels=3,  pretrained=True)
+    assert seg.__dict__[model_name](6, in_channels=3,  pretrained=False)
     with pytest.raises(ValueError):
         seg.__dict__[model_name](2, in_channels=4,  pretrained=True)
     
@@ -56,4 +56,4 @@ def test_segmentation_models(model_name):
 
 
 def test_temp():
-    clss.resnet18(2, in_channels=3, pretrained=True)
+    clss.resnet18(2, in_channels=3, pretrained=False)

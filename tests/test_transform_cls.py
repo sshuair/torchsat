@@ -245,10 +245,10 @@ def test_RandomHorizontalFlip(fp):
     assert result.shape[0:2] == img.shape[0:2]
     if result.ndim == 2:
         height, width = img.shape
-        assert result[height-1,0] == img[0,0]
+        assert result[0,width-1] == img[0,0]
     else:
         height, width, depth = img.shape
-        assert (result[height-1,0,:] == img[0,0,:]).any() == True
+        assert (result[0,width-1,:] == img[0,0,:]).any() == True
 
     # tensor
     result = transforms_cls.Compose([
@@ -267,10 +267,10 @@ def test_RandomVerticalFlip(fp):
     assert result.shape[0:2] == img.shape[0:2]
     if result.ndim == 2:
         height, width = img.shape
-        assert result[0,width-1] == img[0,0]
+        assert result[height-1,0] == img[0,0]
     else:
         height, width, depth = img.shape
-        assert (result[0,width-1,:] == img[0,0,:]).any() == True
+        assert (result[height-1,0,:] == img[0,0,:]).any() == True
 
     # tensor
     result = transforms_cls.Compose([
