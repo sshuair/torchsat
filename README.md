@@ -1,13 +1,14 @@
 # :fire: TorchSat :earth_asia: 
 
 [![Actions Status](https://github.com/sshuair/torchsat/workflows/pytest/badge.svg)](https://github.com/sshuair/torchsat/actions)
+[![Documentation Status](https://readthedocs.org/projects/torchsat/badge/?version=latest)](https://torchsat.readthedocs.io/en/latest/?badge=latest)
 [![GitHub stars](https://img.shields.io/github/stars/sshuair/torchsat)](https://github.com/sshuair/torchsat/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sshuair/torchsat)](https://github.com/sshuair/torchsat/network)
 [![GitHub license](https://img.shields.io/github/license/sshuair/torchsat)](https://github.com/sshuair/torchsat/blob/master/LICENSE)
 
 TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
 
->This project is still work in progress. If you want to know more about it, please refer to the [Roadmap](https://github.com/sshuair/torchsat/wiki/Roadmap)
+>This project is still work in progress. If you want to know more about it, please refer to the [Roadmap](https://github.com/sshuair/torchsat/wiki/Roadmap) .
 
 **Hightlight**
 - :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
@@ -76,7 +77,7 @@ All models support multi-channels as input (e.g. 8 channels).
 - MobileNet: `mobilenet_v2`
 
 #### Sementic Segmentation
-- UNet: `unet`: `unet34`, `unet101`, `unet152` (with resnet as backbone.)
+- UNet: `unet`, `unet34`, `unet101`, `unet152` (with resnet as backbone.)
 
 
 ### Dataloader
@@ -88,7 +89,7 @@ All models support multi-channels as input (e.g. 8 channels).
 
 
 ## Showcase
-If you extend this model to other datasets or build projects that use it, we'd love to hear from you.
+If you extend this repository or build projects that use it, we'd love to hear from you.
 
 
 ## Reference

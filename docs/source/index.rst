@@ -6,9 +6,9 @@
 Welcome to TorchSat's documentation!
 ====================================
 
-TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
+TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch_.
 
-  This project is still work in progress. If you want to know more about it, please refer to the Roadmap_ .
+  This project is still **work in progress**. If you want to know more about it, please refer to the Roadmap_ .
 
 **Hightlight**
 
@@ -26,7 +26,7 @@ TorchSat is an open-source deep learning framework for satellite imagery analysi
    core-conception.rst
    quickstart.rst
    tutorials.rst
-   api <api>
+   api/api.rst
 
 
 
@@ -39,3 +39,4 @@ Indices and tables
 
 
 .. _Roadmap: https://github.com/sshuair/torchsat/wiki/Roadmap
+.. _PyTorch: https://pytorch.org/
