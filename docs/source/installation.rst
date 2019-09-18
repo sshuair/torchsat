@@ -20,7 +20,7 @@ Install from PyPI or Anconda
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  PyPI: ``pip3 install torchsat``
--  Anconda: \`\`
+-  Anconda: `` ``
 
 Install from source
 ~~~~~~~~~~~~~~~~~~~
@@ -29,9 +29,9 @@ Install from source
 
 .. code:: bash
 
-   git clone https://github.com/sshuair/torchsat.git
-   cd torchsat
-   python3 setup.py install
+    git clone https://github.com/sshuair/torchsat.git
+    cd torchsat
+    python3 setup.py install
 
 -  Install the stable version
 
@@ -48,7 +48,18 @@ For data preparation
 
 Docker
 ------
-[wip]
+You can pull the docker image from Docker Hub if you want use TorchSat in docker.
+
+1. pull image 
+    - cpu: `docker pull sshuair/torchsat:cpu-latest` 
+    - gpu: `docker pull sshuair/torchsat:gpu-latest` 
+
+2. run container 
+    - cpu: `docker run -ti --name <NAME> docker pull sshuair/torchsat:cpu-latest bash`
+    - gpu: `docker run -ti --gpu 0,1 --name <NAME> docker pull sshuair/torchsat:gpu-latest bash`
+
+
+This way you can easily use the TorchSat in docker container.
 
 
 

@@ -1,4 +1,6 @@
-# :fire: TorchSat :earth_asia: 
+![TorchSat Logo](https://github.com/sshuair/torchsat/blob/master/docs/source/_static/img/logo-dark.png)
+
+--------------------------------------------------------------------------------
 
 [![Actions Status](https://github.com/sshuair/torchsat/workflows/pytest/badge.svg)](https://github.com/sshuair/torchsat/actions)
 [![Documentation Status](https://readthedocs.org/projects/torchsat/badge/?version=latest)](https://torchsat.readthedocs.io/en/latest/?badge=latest)
