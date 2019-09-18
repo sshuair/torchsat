@@ -1,4 +1,4 @@
-![TorchSat Logo](https://github.com/sshuair/torchsat/blob/master/docs/source/_static/img/logo-dark.png)
+![TorchSat Logo](https://github.com/sshuair/torchsat/blob/master/docs/source/_static/img/logo-black.png)
 
 --------------------------------------------------------------------------------
 
