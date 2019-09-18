@@ -1,12 +1,17 @@
 ![TorchSat Logo](https://github.com/sshuair/torchsat/blob/master/docs/source/_static/img/logo-black.png)
 
---------------------------------------------------------------------------------
+<p align="center">
+  <img width="60%" height="60%" src="https://github.com/sshuair/torchsat/blob/master/docs/source/_static/img/logo-black.png">
+</p>
 
-[![Actions Status](https://github.com/sshuair/torchsat/workflows/pytest/badge.svg)](https://github.com/sshuair/torchsat/actions)
-[![Documentation Status](https://readthedocs.org/projects/torchsat/badge/?version=latest)](https://torchsat.readthedocs.io/en/latest/?badge=latest)
-[![GitHub stars](https://img.shields.io/github/stars/sshuair/torchsat)](https://github.com/sshuair/torchsat/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/sshuair/torchsat)](https://github.com/sshuair/torchsat/network)
-[![GitHub license](https://img.shields.io/github/license/sshuair/torchsat)](https://github.com/sshuair/torchsat/blob/master/LICENSE)
+--------------------------------------------------------------------------------
+<p align="center">
+    <a href="https://github.com/sshuair/torchsat/actions"><img src="https://github.com/sshuair/torchsat/workflows/pytest/badge.svg"></a>
+    <a href="https://torchsat.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/torchsat/badge/?version=latest"></a>
+    <a href="https://github.com/sshuair/torchsat/stargazer"><img src="https://img.shields.io/github/stars/sshuair/torchsat"></a>
+    <a href="https://github.com/sshuair/torchsat/network"><img src="https://img.shields.io/github/forks/sshuair/torchsat"></a>
+    <a href="https://github.com/sshuair/torchsat/blob/master/LICENSE"><img src="https://img.shields.io/github/license/sshuair/torchsat"></a>
+</p>
 
 TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
 

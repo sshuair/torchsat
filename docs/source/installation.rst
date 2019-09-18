@@ -48,15 +48,15 @@ For data preparation
 
 Docker
 ------
-You can pull the docker image from Docker Hub if you want use TorchSat in docker.
+You can pull the docker image from `Docker Hub`_ if you want use TorchSat in docker.
 
 1. pull image 
     - cpu: `docker pull sshuair/torchsat:cpu-latest` 
     - gpu: `docker pull sshuair/torchsat:gpu-latest` 
 
 2. run container 
-    - cpu: `docker run -ti --name <NAME> docker pull sshuair/torchsat:cpu-latest bash`
-    - gpu: `docker run -ti --gpu 0,1 --name <NAME> docker pull sshuair/torchsat:gpu-latest bash`
+    - cpu: `docker run -ti --name <NAME> sshuair/torchsat:cpu-latest bash`
+    - gpu: `docker run -ti --gpu 0,1 --name <NAME> sshuair/torchsat:gpu-latest bash`
 
 
 This way you can easily use the TorchSat in docker container.
@@ -66,3 +66,4 @@ This way you can easily use the TorchSat in docker container.
 .. _PyTorch: https://pytorch.org/
 .. _Python 3: https://www.python.org/
 .. _release: https://github.com/sshuair/torchsat/releases
+.. _Docker Hub: https://hub.docker.com/r/sshuair/torchsat
