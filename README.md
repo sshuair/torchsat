@@ -23,8 +23,9 @@ TorchSat is an open-source deep learning framework for satellite imagery analysi
 - :open_mouth: Training script for common satellite vision tasks.
 
 ## Install
-
-`python3 setup.py install`
+- pypi: `pip3 install torchsat`
+- source: `python3 setup.py install`
+- docker: `docker pull sshuair/torchsat:gpu-latest`
 
 ## How to use
 - **Introduction** - 
