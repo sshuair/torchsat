@@ -621,3 +621,21 @@ def bbox_pad(bboxes, padding):
     pad_bboxes[..., 1::2] = bboxes[..., 1::2] + pad_top
 
     return pad_bboxes
+
+
+def bbox_shift(bboxes, top, left):
+    """shift the bbox
+    
+    Arguments:
+        bboxes {ndarray} -- input bboxes, should be num x 4
+        top {int} -- shit to top value, positive mean move down, negative mean move up.
+        left {int} -- shit to left value, positive mean move right, negative mean move left.
+    
+    Returns:
+        [ndarray] -- shifted bboxes
+    """
+    shifted_bboxes = bboxes.copy()
+    shifted_bboxes[..., 0::2] = shifted_bboxes[..., 0::2] + left
+    shifted_bboxes[..., 1::2] = shifted_bboxes[..., 1::2] + top
+    
+    return shifted_bboxes

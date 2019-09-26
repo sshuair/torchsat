@@ -29,10 +29,10 @@ __all__ = [
     "RandomResizedCrop",
 ]
 
-# 模型输入参数
-# img, batch_size, channel, height, width
-# boxes(float32), batch_size, bbox_nums(4个数值), 4
-# labels(int64), batch_size, bbox_nums(每个box对应的类别)
+# model input params
+# img: batch_size, channel, height, width
+# boxes(float32): batch_size, bbox_nums(4 numbers，left(xmin), top(ymin), right(xmax), bottom(ymin)), 4
+# labels(int64): batch_size, bbox_nums(each bbox corresponding label)
 
 # 同常有三种情况，
 # 一种是三个合在一起
@@ -218,26 +218,40 @@ class RandomContrast(object):
         return F.adjust_contrast(img, self.factor), bboxes, labels
 
 
-# class RandomShift(object):
-#     """random shift the ndarray with value or some percent.
+class RandomShift(object):
+    """random shift the image and bbox with some percent.
 
-#     Args:
-#         max_percent (float): shift percent of the image.
+    Args:
+        max_percent (float): shift percent of the image and bbox.
 
-#     Returns:
-#         ndarray: return the shifted ndarray image.
-#     """
-#     def __init__(self, max_percent=0.4):
-#         self.max_percent = max_percent
+    Returns:
+        ndarray: return the shifted ndarray image.
+        bboxes: return the shifted bboxes
+        labels: return the shifted labels
+    """
+    def __init__(self, max_percent=0.4):
+        self.max_percent = max_percent
 
-#     def __call__(self, img, bboxes, labels):
-#         height, width = img.shape[0:2]
-#         max_top = int(height * self.max_percent)
-#         max_left = int(width * self.max_percent)
-#         top = random.randint(-max_top, max_top)
-#         left = random.randint(-max_left, max_left)
+    def __call__(self, img, bboxes, labels):
+        height, width = img.shape[0:2]
+        max_top = int(height * self.max_percent)
+        max_left = int(width * self.max_percent)
+        top = random.randint(-max_top, max_top)
+        left = random.randint(-max_left, max_left)
 
-#         return F.shift(img, top, left)
+        bboxes = F.bbox_shift(bboxes, top, left)
+
+        bboxes[bboxes<0] = 0
+        bboxes[bboxes>height] = height
+        bboxes[bboxes>width] = width
+
+        # find the outside boxes and remove them
+        x_check = bboxes[..., 0] == bboxes[..., 2]  # x direction(width)
+        y_check = bboxes[..., 1] == bboxes[..., 3]  # y direction(height)
+        bboxes = bboxes[~(x_check | y_check)]
+        labels = np.array(labels)[~(x_check | y_check)].tolist()
+
+        return F.shift(img, top, left), bboxes, labels
 
 
 # class RandomRotation(object):
