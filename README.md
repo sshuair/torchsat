@@ -69,8 +69,8 @@ Spatial-level transforms will simultaneously change both an input image as well 
 | RandomCrop           |   ✓   |   ✓   |   ✓    |
 | RandomResizedCrop    |   ✓   |   ✓   |   ✓    |
 | ElasticTransform     |   ✓   |   ✓   |        |
-| RandomRotation       |   ✓   |   ✓   |        |
-| RandomShift          |   ✓   |   ✓   |        |
+| RandomRotation       |   ✓   |   ✓   |   ✓    |
+| RandomShift          |   ✓   |   ✓   |   ✓    |
 
 
 ### Models

@@ -636,3 +636,41 @@ def bbox_pad(bboxes, padding):
 
     return pad_bboxes
 
+
+def rotate_box(bboxes, angle,  center_x, center_y):
+    """rotate_box rotate the bboxes
+    
+    
+    Args:
+        bboxes (ndarray): the original bboxes, N(numbers) x 4
+        angle (float): rotate angle should be degree
+        center_x (int): rotate center x
+        center_y (int): rotate center y
+    
+    Returns:
+        ndarray: the rotated bboxes
+    """
+    corners = np.concatenate(
+                (bboxes[:,[0,1]], bboxes[:,[2,1]], bboxes[:,[2,3]], bboxes[:,[0,3]]),
+                axis=1
+              )
+    corners = corners.reshape(-1, 2)
+    corners = np.hstack((corners, np.ones((corners.shape[0],1), dtype = type(corners[0][0]))))
+    # 1. transform the coordinates of all four corners
+    M = cv2.getRotationMatrix2D((center_x, center_y), angle, 1.0)
+    corners_rotated = np.dot(M, corners.T).T
+    corners_rotated = corners_rotated.reshape(-1,8)
+    
+    # 2. Find the smallest of all four x's as min_x and the largest of all four x's and call it max_x
+    min_x = np.min(corners_rotated[:, 0::2], axis=1)
+    max_x = np.max(corners_rotated[:, 0::2], axis=1)
+    
+    # 3. Ditto with the y's
+    min_y = np.min(corners_rotated[:, 1::2], axis=1)
+    max_y = np.max(corners_rotated[:, 1::2], axis=1)
+    
+    # 4. Your bounding box is (min_x,min_y), (min_x,max_y), (max_x,max_y), (max_x,min_y)
+    bboxes_rotated = np.stack([min_x,min_y,max_x,max_y], axis=-1)
+    bboxes_rotated = np.round(bboxes_rotated)
+
+    return bboxes_rotated

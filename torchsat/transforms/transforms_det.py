@@ -241,6 +241,7 @@ class RandomShift(object):
 
         bboxes = F.bbox_shift(bboxes, top, left)
 
+        # clip bboxes
         bboxes[bboxes<0] = 0
         bboxes[bboxes>height] = height
         bboxes[bboxes>width] = width
@@ -254,35 +255,49 @@ class RandomShift(object):
         return F.shift(img, top, left), bboxes, labels
 
 
-# class RandomRotation(object):
-#     """random rotate the ndarray image with the degrees.
+class RandomRotation(object):
+    """random rotate the ndarray image with the degrees.
 
-#     Args:
-#         degrees (number or sequence): the rotate degree.
-#                                   If single number, it must be positive.
-#                                   if squeence, it's length must 2 and first number should small than the second one.
+    Args:
+        degrees (number or sequence): the rotate degree.
+                                  If single number, it must be positive.
+                                  if squeence, it's length must 2 and first number should small than the second one.
 
-#     Raises:
-#         ValueError: If degrees is a single number, it must be positive.
-#         ValueError: If degrees is a sequence, it must be of len 2.
+    Raises:
+        ValueError: If degrees is a single number, it must be positive.
+        ValueError: If degrees is a sequence, it must be of len 2.
 
-#     Returns:
-#         ndarray: return rotated ndarray image.
-#     """
-#     def __init__(self, degrees, center=None):
-#         if isinstance(degrees, numbers.Number):
-#             if degrees < 0:
-#                 raise ValueError("If degrees is a single number, it must be positive.")
-#             self.degrees = (-degrees, degrees)
-#         else:
-#             if len(degrees) != 2:
-#                 raise ValueError("If degrees is a sequence, it must be of len 2.")
-#             self.degrees = degrees
-#         self.center = center
+    Returns:
+        ndarray: return rotated ndarray image.
+    """
+    def __init__(self, degrees, center=None):
+        if isinstance(degrees, numbers.Number):
+            if degrees < 0:
+                raise ValueError("If degrees is a single number, it must be positive.")
+            self.degrees = (-degrees, degrees)
+        else:
+            if len(degrees) != 2:
+                raise ValueError("If degrees is a sequence, it must be of len 2.")
+            self.degrees = degrees
+        self.center = center
 
-#     def __call__(self, img):
-#         angle = random.uniform(self.degrees[0], self.degrees[1])
-#         return F.rotate(img, angle, self.center)
+    def __call__(self, img, bboxes, labels):
+        angle = random.uniform(self.degrees[0], self.degrees[1])
+        height, width = img.shape[0:2]
+        bboxes = F.rotate_box(bboxes, angle,  width/2, height/2)
+        
+        # clip bboxes
+        bboxes[bboxes<0] = 0
+        bboxes[bboxes>height] = height
+        bboxes[bboxes>width] = width
+
+        # find the outside boxes and remove them
+        x_check = bboxes[..., 0] == bboxes[..., 2]  # x direction(width)
+        y_check = bboxes[..., 1] == bboxes[..., 3]  # y direction(height)
+        bboxes = bboxes[~(x_check | y_check)]
+        labels = np.array(labels)[~(x_check | y_check)].tolist()
+
+        return F.rotate(img, angle, self.center), bboxes, labels
 
 
 class Resize(object):
