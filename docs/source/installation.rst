@@ -1,4 +1,4 @@
-Installtation
+Installation
 =============
 Deepndencies
 ------------
