@@ -56,7 +56,7 @@ def to_tensor(img):
         if the image is float , it will not be divided, we suppose your image range should between [0~1] ;\n
     
     Arguments:
-        img {numpy.ndarray} -- image to be converted to tensor.
+        img {numpy.ndarray} -- image to be converted to tensor. torch.float32
     """
     if not _is_numpy_image(img):
         raise TypeError("data should be numpy ndarray. but got {}".format(type(img)))
@@ -65,11 +65,11 @@ def to_tensor(img):
         img = img[:, :, None]
 
     if img.dtype == np.uint8:
-        img = img.astype(np.float) / 255
+        img = img.astype(np.float32) / 255
     elif img.dtype == np.uint16:
-        img = img.astype(np.float) / 65535
+        img = img.astype(np.float32) / 65535
     elif img.dtype in [np.float32, np.float64]:
-        img = img.astype(np.float) / 1
+        img = img.astype(np.float32) / 1
     else:
         raise TypeError("{} is not support".format(img.dtype))
 
