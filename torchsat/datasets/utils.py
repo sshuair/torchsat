@@ -74,6 +74,13 @@ def pil_loader(path):
         return np.array(img)
 
 
+def image_loader(path):
+    if os.path.splitext(path)[1].lower() in ['.tif', '.tiff']:
+        return tifffile_loader(path)
+    else:
+        return pil_loader(path)
+
+
 def accimage_loader(path):
     import accimage
     try:
