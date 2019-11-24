@@ -183,8 +183,8 @@ class ImageFolder(DatasetFolder):
         imgs (list): List of (image path, class_index) tuples
     """
     def __init__(self, root, transform=None, target_transform=None,
-                 loader=default_loader):
+                 loader=default_loader, **kwargs):
         super(ImageFolder, self).__init__(root, loader, IMG_EXTENSIONS,
                                           transform=transform,
-                                          target_transform=target_transform)
+                                          target_transform=target_transform, **kwargs)
         self.imgs = self.samples
