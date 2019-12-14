@@ -30,8 +30,8 @@ def inception_v3(num_classes, in_channels=3, pretrained=False, progress=True, **
         transform_input (bool): If True, preprocesses the input according to the method with which it
             was trained on ImageNet. Default: *False*
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+    # if pretrained and in_channels != 3:
+    #     raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
     
     if pretrained:
         if 'transform_input' not in kwargs:
@@ -45,6 +45,20 @@ def inception_v3(num_classes, in_channels=3, pretrained=False, progress=True, **
         state_dict = load_state_dict_from_url(model_urls['inception_v3_google'],
                                               progress=progress)
         model.load_state_dict(state_dict)
+        conv0 = model.Conv2d_1a_3x3.conv
+        model.Conv2d_1a_3x3.conv = nn.Conv2d(in_channels=in_channels,
+                        out_channels=conv0.out_channels,
+                        kernel_size=conv0.kernel_size,
+                        stride=conv0.stride,
+                        padding=conv0.padding,
+                        bias=conv0.bias)
+        if in_channels <= 3:
+            model.Conv2d_1a_3x3.conv.weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+        else:
+            multi = in_channels//3
+            last = in_channels%3
+            model.Conv2d_1a_3x3.conv.weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.Conv2d_1a_3x3.conv.weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
         model.fc = nn.Linear(model.fc.in_features, num_classes)
         if not original_aux_logits:
             model.aux_logits = False

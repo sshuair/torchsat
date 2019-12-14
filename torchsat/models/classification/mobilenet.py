@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from ..utils import load_state_dict_from_url
 
@@ -152,14 +153,28 @@ def mobilenet_v2(num_classes, in_channels=3, pretrained=False, progress=True, **
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+    # if pretrained and in_channels != 3:
+    #     raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
     
     
     if pretrained:
         model = MobileNetV2(**kwargs)
         state_dict = load_state_dict_from_url(model_urls['mobilenet_v2'], progress=progress)
         model.load_state_dict(state_dict)
+        conv0 = model.features[0][0]
+        model.features[0][0] = nn.Conv2d(in_channels=in_channels,
+                        out_channels=conv0.out_channels,
+                        kernel_size=conv0.kernel_size,
+                        stride=conv0.stride,
+                        padding=conv0.padding,
+                        bias=conv0.bias)
+        if in_channels <= 3:
+            model.features[0][0].weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+        else:
+            multi = in_channels//3
+            last = in_channels%3
+            model.features[0][0].weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.features[0][0].weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
         model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     else:
         model = MobileNetV2(num_classes=num_classes,in_channels=in_channels, **kwargs)

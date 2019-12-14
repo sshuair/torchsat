@@ -5,6 +5,10 @@ from ..utils import load_state_dict_from_url
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152', 'resnext50_32x4d', 'resnext101_32x8d',
            'wide_resnet50_2', 'wide_resnet101_2']
+""" This script was taken from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py.
+And modified for muti-channel as inputs
+
+"""
 
 
 model_urls = {
@@ -210,13 +214,27 @@ class ResNet(nn.Module):
 
 
 def _resnet(arch, block, layers, pretrained, progress, num_classes, in_channels, **kwargs):
-    if pretrained and in_channels != 3:
-        raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-    
+    # if pretrained and in_channels != 3:
+        # raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
     if pretrained:
         model = ResNet(block, layers, **kwargs)
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         model.load_state_dict(state_dict)
+        conv1 = model.conv1
+        model.conv1 = nn.Conv2d(in_channels=in_channels,
+                        out_channels=conv1.out_channels,
+                        kernel_size=conv1.kernel_size,
+                        stride=conv1.stride,
+                        padding=conv1.padding,
+                        bias=conv1.bias)
+
+        if in_channels <= 3:
+            model.conv1.weight[:,0:in_channels,:,:] = conv1.weight[:,0:in_channels,:,:]
+        else:
+            multi = in_channels//3
+            last = in_channels%3
+            model.conv1.weight[:,:3*multi,:,:] = torch.cat([conv1.weight for x in range(multi)], dim=1)
+            model.conv1.weight[:,3*multi:,:,:] = conv1.weight[:,:last,:,:]
         model.fc = nn.Linear(model.fc.in_features, num_classes)
     else:
         model = ResNet(block, layers, num_classes=num_classes, in_channels=in_channels, **kwargs)
@@ -227,7 +245,8 @@ def resnet18(num_classes, in_channels=3, pretrained=False, progress=True, **kwar
     r"""ResNet-18 model from
     `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>'_
     Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
+        pretrained (bool): If True, returns a model pre-trained on ImageNet. \
+                           If in_channels is greater than 3, it will copy the parameters of imagenet to fill in order.
         progress (bool): If True, displays a progress bar of the download to stderr
     """
     return _resnet('resnet18', BasicBlock, [2, 2, 2, 2], pretrained, progress,

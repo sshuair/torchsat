@@ -114,8 +114,8 @@ class UNetResNet(nn.Module):
     def __init__(self, encoder_depth, num_classes, in_channels=3, num_filters=32, dropout_2d=0.0,
                  pretrained=False, is_deconv=False):
         super().__init__()
-        if pretrained and in_channels != 3:
-            raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
+        # if pretrained and in_channels != 3:
+        #     raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
     
         self.num_classes = num_classes
         self.dropout_2d = dropout_2d
