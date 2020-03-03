@@ -169,12 +169,12 @@ def mobilenet_v2(num_classes, in_channels=3, pretrained=False, progress=True, **
                         padding=conv0.padding,
                         bias=conv0.bias)
         if in_channels <= 3:
-            model.features[0][0].weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+            model.features[0][0].weight.data = conv0.weight[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.features[0][0].weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
-            model.features[0][0].weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
+            model.features[0][0].weight.data = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.features[0][0].weight.data = conv0.weight[:,:last,:,:]
         model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     else:
         model = MobileNetV2(num_classes=num_classes,in_channels=in_channels, **kwargs)

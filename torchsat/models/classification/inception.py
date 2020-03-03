@@ -53,12 +53,12 @@ def inception_v3(num_classes, in_channels=3, pretrained=False, progress=True, **
                         padding=conv0.padding,
                         bias=conv0.bias)
         if in_channels <= 3:
-            model.Conv2d_1a_3x3.conv.weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+            model.Conv2d_1a_3x3.conv.weight.data = conv0.weight[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.Conv2d_1a_3x3.conv.weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
-            model.Conv2d_1a_3x3.conv.weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
+            model.Conv2d_1a_3x3.conv.weight.data = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.Conv2d_1a_3x3.conv.weight.data = conv0.weight[:,:last,:,:]
         model.fc = nn.Linear(model.fc.in_features, num_classes)
         if not original_aux_logits:
             model.aux_logits = False

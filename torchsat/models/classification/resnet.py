@@ -229,12 +229,12 @@ def _resnet(arch, block, layers, pretrained, progress, num_classes, in_channels,
                         bias=conv1.bias)
 
         if in_channels <= 3:
-            model.conv1.weight[:,0:in_channels,:,:] = conv1.weight[:,0:in_channels,:,:]
+            model.conv1.weight.data = conv1.weight.data[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.conv1.weight[:,:3*multi,:,:] = torch.cat([conv1.weight for x in range(multi)], dim=1)
-            model.conv1.weight[:,3*multi:,:,:] = conv1.weight[:,:last,:,:]
+            model.conv1.weight.data = torch.cat([conv1.weight for x in range(multi)], dim=1)
+            model.conv1.weight.data = conv1.weight[:,:last,:,:]
         model.fc = nn.Linear(model.fc.in_features, num_classes)
     else:
         model = ResNet(block, layers, num_classes=num_classes, in_channels=in_channels, **kwargs)

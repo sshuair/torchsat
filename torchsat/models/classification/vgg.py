@@ -98,12 +98,12 @@ def _vgg(arch, cfg, batch_norm, pretrained, progress, num_classes, in_channels, 
                         stride=conv0.stride,
                         padding=conv0.padding)
         if in_channels <= 3:
-            model.features[0].weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+            model.features[0].weight.data = conv0.weight[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.features[0].weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
-            model.features[0].weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
+            model.features[0].weight.data = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.features[0].weight.data = conv0.weight[:,:last,:,:]
         model.classifier[6] = nn.Linear(model.classifier[6].in_features, 2)
     else:
         model = VGG(make_layers(cfgs[cfg], in_channels=in_channels, batch_norm=batch_norm), 
