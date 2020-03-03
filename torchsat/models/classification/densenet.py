@@ -195,12 +195,12 @@ def _densenet(arch, growth_rate, block_config, num_init_features, pretrained, pr
                         bias=conv0.bias)
 
         if in_channels <= 3:
-            model.features.conv0.weight[:,0:in_channels,:,:] = conv0.weight[:,0:in_channels,:,:]
+            model.features.conv0.weight.data = conv0.weight[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.features.conv0.weight[:,:3*multi,:,:] = torch.cat([conv0.weight for x in range(multi)], dim=1)
-            model.features.conv0.weight[:,3*multi:,:,:] = conv0.weight[:,:last,:,:]
+            model.features.conv0.weight.data = torch.cat([conv0.weight for x in range(multi)], dim=1)
+            model.features.conv0.weight.data = conv0.weight[:,:last,:,:]
         model.classifier = nn.Linear(model.classifier.in_features, num_classes)
     else:
         model = DenseNet(growth_rate, block_config, num_init_features,
