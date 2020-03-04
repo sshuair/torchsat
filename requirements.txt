@@ -6,3 +6,4 @@ tifffile>=2019.1.1
 opencv-python>=3.2.0.6
 torch>=1.0.0
 torchvision>=0.2.0
+yacs>=0.1.6
