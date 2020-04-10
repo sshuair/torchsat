@@ -4,8 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from collections import OrderedDict
-from ..utils import load_state_dict_from_url
-
+from torch.hub import load_state_dict_from_url
 
 __all__ = ['DenseNet', 'densenet121', 'densenet169', 'densenet201', 'densenet161']
 
@@ -102,8 +101,8 @@ class DenseNet(nn.Module):
     """
 
     def __init__(self, growth_rate=32, block_config=(6, 12, 24, 16),
-                 num_init_features=64, bn_size=4, drop_rate=0, 
-                 num_classes=1000,in_channels=3, memory_efficient=False):
+                 num_init_features=64, bn_size=4, drop_rate=0,
+                 num_classes=1000, in_channels=3, memory_efficient=False):
 
         super(DenseNet, self).__init__()
 
@@ -182,29 +181,29 @@ def _densenet(arch, growth_rate, block_config, num_init_features, pretrained, pr
               num_classes, in_channels, **kwargs):
     # if pretrained and in_channels != 3:
     #     raise ValueError('ImageNet pretrained models only support 3 input channels, but got {}'.format(in_channels))
-    
+
     if pretrained:
         model = DenseNet(growth_rate, block_config, num_init_features, **kwargs)
         _load_state_dict(model, model_urls[arch], progress)
         conv0 = model.features.conv0
         model.features.conv0 = nn.Conv2d(in_channels=in_channels,
-                        out_channels=conv0.out_channels,
-                        kernel_size=conv0.kernel_size,
-                        stride=conv0.stride,
-                        padding=conv0.padding,
-                        bias=conv0.bias)
+                                         out_channels=conv0.out_channels,
+                                         kernel_size=conv0.kernel_size,
+                                         stride=conv0.stride,
+                                         padding=conv0.padding,
+                                         bias=conv0.bias)
 
         if in_channels <= 3:
-            model.features.conv0.weight.data = conv0.weight[:,0:in_channels,:,:]
+            model.features.conv0.weight.data = conv0.weight[:, 0:in_channels, :, :]
         else:
-            multi = in_channels//3
-            last = in_channels%3
+            multi = in_channels // 3
+            last = in_channels % 3
             model.features.conv0.weight.data = torch.cat([conv0.weight for x in range(multi)], dim=1)
-            model.features.conv0.weight.data = conv0.weight[:,:last,:,:]
+            model.features.conv0.weight.data = conv0.weight[:, :last, :, :]
         model.classifier = nn.Linear(model.classifier.in_features, num_classes)
     else:
         model = DenseNet(growth_rate, block_config, num_init_features,
-                        num_classes=num_classes, in_channels=in_channels, **kwargs)
+                         num_classes=num_classes, in_channels=in_channels, **kwargs)
     return model
 
 
@@ -218,7 +217,7 @@ def densenet121(num_classes, in_channels=3, pretrained=False, progress=True, **k
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
     return _densenet('densenet121', 32, (6, 12, 24, 16), 64, pretrained, progress,
-                    num_classes, in_channels, **kwargs)
+                     num_classes, in_channels, **kwargs)
 
 
 def densenet161(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
@@ -231,7 +230,7 @@ def densenet161(num_classes, in_channels=3, pretrained=False, progress=True, **k
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
     return _densenet('densenet161', 48, (6, 12, 36, 24), 96, pretrained, progress,
-                    num_classes, in_channels, **kwargs)
+                     num_classes, in_channels, **kwargs)
 
 
 def densenet169(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
@@ -244,7 +243,7 @@ def densenet169(num_classes, in_channels=3, pretrained=False, progress=True, **k
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
     return _densenet('densenet169', 32, (6, 12, 32, 32), 64, pretrained, progress,
-                    num_classes, in_channels, **kwargs)
+                     num_classes, in_channels, **kwargs)
 
 
 def densenet201(num_classes, in_channels=3, pretrained=False, progress=True, **kwargs):
@@ -257,4 +256,4 @@ def densenet201(num_classes, in_channels=3, pretrained=False, progress=True, **k
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_
     """
     return _densenet('densenet201', 32, (6, 12, 48, 32), 64, pretrained, progress,
-                    num_classes, in_channels, **kwargs)
+                     num_classes, in_channels, **kwargs)

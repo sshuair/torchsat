@@ -69,7 +69,7 @@ class ToTensor(object):
 
 
 class Normalize(object):
-    def __init__(self, mean, std, inplace=False):
+    def __init__(self, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], inplace=False):
         self.mean = mean
         self.std = std
         self.inplace = inplace
