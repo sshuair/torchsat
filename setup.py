@@ -22,4 +22,8 @@ setup(
     license="MIT",
     install_requires=requirements,
     keywords='pytorch deep learning satellite remote sensing',
+    entry_points='''
+        [console_scripts]
+        ts=torchsat.cli.cli:entry_point
+    '''
 )
