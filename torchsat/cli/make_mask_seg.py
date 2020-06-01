@@ -85,7 +85,3 @@ def make_mask_seg(image_file: str, label_file: str, field, width: int, height: i
                 dst.write(label_arr, 1)
 
     img_src.close()
-
-
-if __name__ == "__main__":
-    main()

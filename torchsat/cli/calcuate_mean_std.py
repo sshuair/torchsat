@@ -52,7 +52,3 @@ def calcuate_mean_std(root, percent, channels, max, fmt):
 
     print("scaled  mean:{} \nscaled  std: {} ".format(mean, std))
     print("orginal mean: {} \norginal std: {}".format(mean * max, std * max))
-
-
-# if __name__ == "__main__":
-#     calcuate_mean_std()

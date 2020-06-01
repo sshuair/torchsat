@@ -49,7 +49,3 @@ def make_mask_cls(filepath: str, width: int, height: int, drop_last: bool, outpa
     for idx, item in enumerate(files):
         print('processing {}/{} file {} ...'.format(idx + 1, len(files), item))
         patch_image(item, width, height, drop_last, outpath)
-
-
-if __name__ == "__main__":
-    main()
