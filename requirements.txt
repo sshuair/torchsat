@@ -7,3 +7,7 @@ opencv-python>=3.2.0.6
 torch>=1.0.0
 torchvision>=0.2.0
 yacs>=0.1.6
+click>=7.0.0
+rasterio>=1.1.0
+geopandas>=0.6.0
+tqdm>=4.30.0

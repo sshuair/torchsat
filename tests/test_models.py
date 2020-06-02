@@ -39,7 +39,7 @@ def test_segmentation_models(model_name):
     assert seg.__dict__[model_name](4, in_channels=3,  pretrained=False)
     assert seg.__dict__[model_name](5, in_channels=7,  pretrained=False)
     assert seg.__dict__[model_name](6, in_channels=3,  pretrained=False)
-    assert clss.__dict__[model_name](2, in_channels=5,  pretrained=True)
+    assert seg.__dict__[model_name](2, in_channels=5,  pretrained=True)
     
     num_classes=10
     in_channels=5
