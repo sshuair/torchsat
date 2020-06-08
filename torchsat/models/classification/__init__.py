@@ -3,3 +3,4 @@ from .inception import *
 from .mobilenet import *
 from .resnet import *
 from .vgg import *
+from .efficientnet import *
