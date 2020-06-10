@@ -37,10 +37,10 @@ class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         for t in self.transforms:
-            img, mask = t(img, mask)
-        return img, mask
+            pre_img, post_img, mask = t(pre_img, post_img, mask)
+        return pre_img, post_img, mask
 
     def __repr__(self):
         format_string = self.__class__.__name__ + "("
@@ -55,40 +55,36 @@ class Lambda(object):
     def __init__(self, lambd):
         self.lambd = lambd
 
-    def __call__(self, img, mask):
-        return self.lambd(img, mask)
+    def __call__(self, pre_img, post_img, mask):
+        return self.lambd(pre_img, post_img, mask)
 
     def __repr__(self):
         return self.__class__.__namme + "()"
 
 
 class ToTensor(object):
-    def __call__(self, img, mask):
-
-        return F.to_tensor(img), torch.tensor(mask, dtype=torch.long)
+    def __call__(self, pre_img, post_img, mask):
+        return F.to_tensor(pre_img), F.to_tensor(post_img), torch.tensor(mask, dtype=torch.long)
 
 
 class Normalize(object):
-    def __init__(self, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], inplace=False):
+    def __init__(self, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), inplace=False):
         self.mean = mean
         self.std = std
         self.inplace = inplace
 
-    def __call__(self, tensor, mask):
-        return F.normalize(tensor, self.mean, self.std, self.inplace), mask
-
-
-class ToPILImage(object):
-    # TODO
-    pass
+    def __call__(self, pre_tensor, post_tensor, mask):
+        return F.normalize(pre_tensor, self.mean, self.std, self.inplace), \
+               F.normalize(post_tensor, self.mean, self.std, self.inplace), \
+               mask
 
 
 class ToGray(object):
     """Convert the image to grayscale
-    
+
     Args:
         output_channels (int): number of channels desired for output image. (default: 1)
-    
+
     Returns:
         [ndarray]: the graysacle version of input
         - If output_channels=1 : returned single channel image (height, width)
@@ -109,16 +105,16 @@ class RandomNoise(object):
                 "mode should be gaussian, salt, pepper, but got {}".format(mode)
             )
 
-    def __call__(self, img, mask):
-        return F.noise(img, self.mode), mask
+    def __call__(self, pre_img, post_img, mask):
+        return F.noise(pre_img, self.mode), F.noise(post_img, self.mode), mask
 
 
 class GaussianBlur(object):
     def __init__(self, kernel_size=3):
         self.kernel_size = kernel_size
 
-    def __call__(self, img, mask):
-        return F.gaussian_blur(img, self.kernel_size), mask
+    def __call__(self, pre_img, post_img, mask):
+        return F.gaussian_blur(pre_img, self.kernel_size), F.gaussian_blur(post_img, self.kernel_size), mask
 
 
 class RandomNoise(object):
@@ -126,7 +122,7 @@ class RandomNoise(object):
     Args:
         mode (str): the noise mode, should be one of ``gaussian``, ``salt``, ``pepper``, ``s&p``, (default: gaussian).
         percent (float): noise percent, only work for ``salt``, ``pepper``, ``s&p`` mode. (default: 0.02)
-    
+
     Returns:
         ndarray: noised ndarray image.
     """
@@ -139,8 +135,8 @@ class RandomNoise(object):
         self.mode = mode
         self.percent = percent
 
-    def __call__(self, img, mask):
-        return F.noise(img, self.mode, self.percent), mask
+    def __call__(self, pre_img, post_img, mask):
+        return F.noise(pre_img, self.mode, self.percent), F.noise(post_img, self.mode, self.percent), mask
 
 
 class RandomBrightness(object):
@@ -150,8 +146,8 @@ class RandomBrightness(object):
         if isinstance(max_value, collections.Iterable) and len(max_value) == 2:
             self.value = random.uniform(max_value[0], max_value[1])
 
-    def __call__(self, img, mask):
-        return F.adjust_brightness(img, self.value), mask
+    def __call__(self, pre_img, post_img, mask):
+        return F.adjust_brightness(pre_img, self.value), F.adjust_brightness(pre_img, self.value), mask
 
 
 class RandomContrast(object):
@@ -161,16 +157,16 @@ class RandomContrast(object):
         if isinstance(max_factor, collections.Iterable) and len(max_factor) == 2:
             self.factor = random.uniform(max_factor[0], max_factor[1])
 
-    def __call__(self, img, mask):
-        return F.adjust_contrast(img, self.factor), mask
+    def __call__(self, pre_img, post_img, mask):
+        return F.adjust_contrast(pre_img, self.factor), F.adjust_contrast(post_img, self.factor), mask
 
 
 class RandomShift(object):
     """random shift the ndarray with value or some percent.
-    
+
     Args:
         max_percent (float): shift percent of the image.
-    
+
     Returns:
         ndarray: return the shifted ndarray image.
     """
@@ -178,28 +174,28 @@ class RandomShift(object):
     def __init__(self, max_percent=0.4):
         self.max_percent = max_percent
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         height, width = img.shape[0:2]
         max_top = int(height * self.max_percent)
         max_left = int(width * self.max_percent)
         top = random.randint(-max_top, max_top)
         left = random.randint(-max_left, max_left)
 
-        return F.shift(img, top, left), F.shift(mask, top, left)
+        return F.shift(pre_img, top, left), F.shift(post_img, top, left), F.shift(mask, top, left)
 
 
 class RandomRotation(object):
     """random rotate the ndarray image with the degrees.
-    
+
     Args:
         degrees (number or sequence): the rotate degree.
                                   If single number, it must be positive.
                                   if squeence, it's length must 2 and first number should small than the second one.
-    
+
     Raises:
         ValueError: If degrees is a single number, it must be positive.
         ValueError: If degrees is a sequence, it must be of len 2.
-    
+
     Returns:
         ndarray: return rotated ndarray image.
     """
@@ -215,9 +211,11 @@ class RandomRotation(object):
             self.degrees = degrees
         self.center = center
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         angle = random.uniform(self.degrees[0], self.degrees[1])
-        return F.rotate(img, angle, self.center), F.rotate(mask, angle, self.center)
+        return F.rotate(pre_img, angle, self.center), \
+               F.rotate(post_img, angle, self.center), \
+               F.rotate(mask, angle, self.center)
 
 
 class Resize(object):
@@ -226,15 +224,15 @@ class Resize(object):
         img {ndarray} : the input ndarray image
         size {int, iterable} : the target size, if size is intger,  width and height will be resized to same \
                                 otherwise, the size should be tuple (height, width) or list [height, width]
-                                
-    
+
+
     Keyword Arguments:
         interpolation {Image} : the interpolation method (default: {Image.BILINEAR})
-    
+
     Raises:
         TypeError : img should be ndarray
         ValueError : size should be intger or iterable vaiable and length should be 2.
-    
+
     Returns:
         img (ndarray) : resize ndarray image
     """
@@ -243,17 +241,16 @@ class Resize(object):
         self.size = size
         self.interpolation = interpolation
 
-    def __call__(self, img, mask):
-        return (
-            F.resize(img, self.size, self.interpolation),
+    def __call__(self, pre_img, post_img, mask):
+        return F.resize(pre_img, self.size, self.interpolation), \
+            F.resize(post_img, self.size, self.interpolation), \
             F.resize(mask, self.size, Image.NEAREST),
-        )
 
 
 class Pad(object):
     """Pad the given ndarray image with padding width.
     Args:
-        padding : {int, sequence}, padding width 
+        padding : {int, sequence}, padding width
                   If int, each border same.
                   If sequence length is 2, this is the padding for left/right and top/bottom.
                   If sequence length is 4, this is the padding for left, top, right, bottom.
@@ -271,24 +268,25 @@ class Pad(object):
         self.fill = fill
         self.padding_mode = padding_mode
 
-    def __call__(self, img, mask):
-        img = F.pad(img, self.padding, self.fill, self.padding_mode)
+    def __call__(self, pre_img, post_img, mask):
+        pre_img = F.pad(pre_img, self.padding, self.fill, self.padding_mode)
+        post_img = F.pad(post_img, self.padding, self.fill, self.padding_mode)
         if self.padding_mode == "reflect":
-            return img, F.pad(mask, self.padding, 0, self.padding_mode)
+            return pre_img, post_img, F.pad(mask, self.padding, 0, self.padding_mode)
         else:
-            return img, F.pad(mask, self.padding, 0, "constant")
+            return pre_img, post_img, F.pad(mask, self.padding, 0, "constant")
 
 
 class CenterCrop(object):
     """crop image
-    
+
     Args:
         img {ndarray}: input image
         output_size {number or sequence}: the output image size. if sequence, should be [height, width]
-    
+
     Raises:
         ValueError: the input image is large than original image.
-    
+
     Returns:
         ndarray: return croped ndarray image.
     """
@@ -296,16 +294,18 @@ class CenterCrop(object):
     def __init__(self, out_size):
         self.out_size = out_size
 
-    def __call__(self, img, mask):
-        return F.center_crop(img, self.out_size), F.center_crop(mask, self.out_size)
+    def __call__(self, pre_img, post_img, mask):
+        return F.center_crop(pre_img, self.out_size), \
+               F.center_crop(post_img, self.out_size), \
+               F.center_crop(mask, self.out_size)
 
 
 class RandomCrop(object):
     """random crop the input ndarray image
-    
+
     Args:
         size (int, sequence): th output image size, if sequeue size should be [height, width]
-    
+
     Returns:
         ndarray:  return random croped ndarray image.
     """
@@ -316,24 +316,24 @@ class RandomCrop(object):
         else:
             self.size = size
 
-    def __call__(self, img, mask):
-        h, w = img.shape[0:2]
+    def __call__(self, pre_img, post_img, mask):
+        h, w = pre_img.shape[0:2]
         th, tw = self.size
         if w == tw and h == tw:
-            return img
+            return pre_img, post_img
 
         top = random.randint(0, h - th)
         left = random.randint(0, w - tw)
 
-        return F.crop(img, top, left, th, tw), F.crop(mask, top, left, th, tw)
+        return F.crop(pre_img, top, left, th, tw), F.crop(post_img, top, left, th, tw), F.crop(mask, top, left, th, tw)
 
 
 class RandomHorizontalFlip(object):
     """Flip the input image on central horizon line.
-    
+
     Args:
         p (float): probability apply the horizon flip.(default: 0.5)
-    
+
     Returns:
         ndarray: return the flipped image.
     """
@@ -341,10 +341,10 @@ class RandomHorizontalFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         if random.random() < self.p:
-            return F.hflip(img), F.hflip(mask)
-        return img, mask
+            return F.hflip(pre_img), F.hflip(post_img), F.hflip(mask)
+        return pre_img, post_img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + "(p={})".format(self.p)
@@ -352,10 +352,10 @@ class RandomHorizontalFlip(object):
 
 class RandomVerticalFlip(object):
     """Flip the input image on central vertical line.
-    
+
     Args:
         p (float): probability apply the vertical flip. (default: 0.5)
-    
+
     Returns:
         ndarray: return the flipped image.
     """
@@ -363,10 +363,10 @@ class RandomVerticalFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         if random.random() < self.p:
-            return F.vflip(img), F.vflip(mask)
-        return img, mask
+            return F.vflip(pre_img), F.vflip(post_img), F.vflip(mask)
+        return pre_img, post_img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + "(p={})".format(self.p)
@@ -374,10 +374,10 @@ class RandomVerticalFlip(object):
 
 class RandomFlip(object):
     """Flip the input image vertical or horizon.
-    
+
     Args:
         p (float): probability apply flip. (default: 0.5)
-    
+
     Returns:
         ndarray: return the flipped image.
     """
@@ -385,11 +385,11 @@ class RandomFlip(object):
     def __init__(self, p=0.5):
         self.p = p
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         if random.random() < self.p:
             flip_code = random.randint(0, 1)
-            return F.flip(img, flip_code), F.flip(mask, flip_code)
-        return img, mask
+            return F.flip(pre_img, flip_code), F.flip(post_img, flip_code), F.flip(mask, flip_code)
+        return pre_img, post_img, mask
 
     def __repr__(self):
         return self.__class__.__name__ + "(p={})".format(self.p)
@@ -397,10 +397,10 @@ class RandomFlip(object):
 
 class RandomResizedCrop(object):
     """[summary]
-    
+
     Args:
         object ([type]): [description]
-    
+
     Returns:
         [type]: [description]
     """
@@ -413,26 +413,28 @@ class RandomResizedCrop(object):
         self.target_size = target_size
         self.interpolation = interpolation
 
-    def __call__(self, img, mask):
-        h, w = img.shape[0:2]
+    def __call__(self, pre_img, post_img, mask):
+        h, w = pre_img.shape[0:2]
         th, tw = self.crop_size
         if w == tw and h == tw:
-            return img, mask
+            return pre_img, post_img, mask
 
         top = random.randint(0, h - th)
         left = random.randint(0, w - tw)
 
-        img = F.crop(img, top, left, th, tw)
-        img = F.resize(img, self.target_size, interpolation=self.interpolation)
+        pre_img = F.crop(pre_img, top, left, th, tw)
+        pre_img = F.resize(pre_img, self.target_size, interpolation=self.interpolation)
+        post_img = F.crop(post_img, top, left, th, tw)
+        post_img = F.resize(post_img, self.target_size, interpolation=self.interpolation)
         mask = F.crop(mask, top, left, th, tw)
         mask = F.resize(mask, self.target_size, interpolation=Image.NEAREST)
 
-        return img, mask
+        return pre_img, post_img, mask
 
 
 class ElasticTransform(object):
     """
-    code modify from https://github.com/albu/albumentations.  
+    code modify from https://github.com/albu/albumentations.
     Elastic deformation of images as described in [Simard2003]_ (with modifications).
     Based on https://gist.github.com/erniejunior/601cdf56d2b424757de5
     .. [Simard2003] Simard, Steinkraus and Platt, "Best Practices for
@@ -447,14 +449,14 @@ class ElasticTransform(object):
     """
 
     def __init__(
-        self,
-        alpha=1,
-        sigma=50,
-        alpha_affine=50,
-        interpolation=cv2.INTER_LINEAR,
-        border_mode=cv2.BORDER_REFLECT_101,
-        random_state=None,
-        approximate=False,
+            self,
+            alpha=1,
+            sigma=50,
+            alpha_affine=50,
+            interpolation=cv2.INTER_LINEAR,
+            border_mode=cv2.BORDER_REFLECT_101,
+            random_state=None,
+            approximate=False,
     ):
         self.alpha = alpha
         self.alpha_affine = alpha_affine
@@ -464,10 +466,20 @@ class ElasticTransform(object):
         self.random_state = random_state
         self.approximate = approximate
 
-    def __call__(self, img, mask):
+    def __call__(self, pre_img, post_img, mask):
         return (
             F.elastic_transform(
-                img,
+                pre_img,
+                self.alpha,
+                self.sigma,
+                self.alpha_affine,
+                self.interpolation,
+                self.border_mode,
+                np.random.RandomState(self.random_state),
+                self.approximate,
+            ),
+            F.elastic_transform(
+                post_img,
                 self.alpha,
                 self.sigma,
                 self.alpha_affine,

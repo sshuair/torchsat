@@ -2,12 +2,11 @@
 import os
 import os.path
 import sys
+from pathlib import Path
 
-import numpy as np
 import torch.utils.data as data
-from PIL import Image
 
-from .utils import default_loader
+from .utils import default_loader, image_loader
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', 'webp']
 
@@ -188,3 +187,33 @@ class ImageFolder(DatasetFolder):
                                           transform=transform,
                                           target_transform=target_transform, **kwargs)
         self.imgs = self.samples
+
+
+class ChangeDetectionDataset(data.Dataset):
+    def __init__(self, root, extensions=('jpg'), transform=None):
+        self.root = root
+        self.extensions = extensions
+        self.transform = transform
+
+        self.samples = self._generate_data()
+
+    def __getitem__(self, index):
+        pre_img, post_img, label_img = [image_loader(x) for x in self.samples[index]]
+        if self.transform is not None:
+            pre_img, post_img, label_img = self.transform(pre_img, post_img, label_img)
+        return pre_img, post_img, label_img
+
+    def _generate_data(self):
+        images = []
+        for root, _, fnames in sorted(os.walk(os.path.join(self.root, 'pre'))):
+            for fname in sorted(fnames):
+                if has_file_allowed_extension(fname, self.extensions):
+                    pre_path = os.path.join(root, fname)
+                    post_path = pre_path.replace('pre', 'post')
+                    label_path = str(Path(pre_path.replace('pre', 'label')).with_suffix('.png'))
+                    images.append((pre_path, post_path, label_path))
+
+        return images
+
+    def __len__(self):
+        return len(self.samples)
