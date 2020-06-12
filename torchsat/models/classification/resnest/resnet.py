@@ -10,7 +10,7 @@ import math
 import torch
 import torch.nn as nn
 
-from splat import SplAtConv2d
+from .splat import SplAtConv2d
 
 __all__ = ['ResNet', 'Bottleneck']
 
