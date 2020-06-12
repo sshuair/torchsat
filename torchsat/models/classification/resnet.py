@@ -220,6 +220,9 @@ def _resnet(arch, block, layers, pretrained, progress, num_classes, in_channels,
         model = ResNet(block, layers, **kwargs)
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         model.load_state_dict(state_dict)
+        if in_channels==3:
+            return model
+
         conv1 = model.conv1
         model.conv1 = nn.Conv2d(in_channels=in_channels,
                         out_channels=conv1.out_channels,
@@ -228,13 +231,14 @@ def _resnet(arch, block, layers, pretrained, progress, num_classes, in_channels,
                         padding=conv1.padding,
                         bias=conv1.bias)
 
-        if in_channels <= 3:
+        if in_channels < 3:
             model.conv1.weight.data = conv1.weight.data[:,0:in_channels,:,:]
         else:
             multi = in_channels//3
             last = in_channels%3
-            model.conv1.weight.data = torch.cat([conv1.weight for x in range(multi)], dim=1)
-            model.conv1.weight.data = conv1.weight[:,:last,:,:]
+            params_duplicate = [conv1.weight for x in range(multi)]
+            params_duplicate.append(conv1.weight.data[:, :last, :, :])
+            model.conv1.weight.data = torch.cat(params_duplicate, dim=1)
         model.fc = nn.Linear(model.fc.in_features, num_classes)
     else:
         model = ResNet(block, layers, num_classes=num_classes, in_channels=in_channels, **kwargs)
