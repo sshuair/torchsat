@@ -221,6 +221,7 @@ def _resnet(arch, block, layers, pretrained, progress, num_classes, in_channels,
         state_dict = load_state_dict_from_url(model_urls[arch], progress=progress)
         model.load_state_dict(state_dict)
         if in_channels==3:
+            model.fc = nn.Linear(model.fc.in_features, num_classes)
             return model
 
         conv1 = model.conv1
