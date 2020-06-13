@@ -79,10 +79,6 @@ def main(args):
     # model
     model = get_model(args.model, args.num_classes, pretrained=args.pretrained)
     model.to(device)
-    # from torchvision.models import resnet34
-    # model = resnet34(pretrained=True)
-    # model.fc = torch.nn.Linear(model.fc.in_features, args.num_classes)
-    # model.to(device)
 
     # resume from previous trained checkpoint
     if args.resume:
@@ -106,7 +102,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='TorchSat Classification Training')
     parser.add_argument('--train-path', help='train dataset path')
     parser.add_argument('--val-path', help='validate dataset path')
-    parser.add_argument('--model', default="resnet34", help='')
+    parser.add_argument('--model', default="resnet18", help='')
     parser.add_argument('--pretrained', default=True)
 
     parser.add_argument('--resume',default='', type=str, metavar='PATH',
