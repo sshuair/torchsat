@@ -70,7 +70,7 @@ def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     # all the loader should be numpy ndarray [height, width, channels]
     with open(path, 'rb') as f:
-        img = Image.open(f).convert('RGB')
+        img = Image.open(f)
         return np.array(img)
 
 

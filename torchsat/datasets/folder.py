@@ -190,6 +190,39 @@ class ImageFolder(DatasetFolder):
 
 
 class ChangeDetectionDataset(data.Dataset):
+    """A generic data loader where the images are arranged in this way: ::
+            .
+        ├── train
+        │   ├── pre
+        │   │   ├── train_1.png
+        │   │   ├── train_2.png
+        │   │   ├── ...
+        │   ├── post
+        │   │   ├── train_1.png
+        │   │   ├── train_2.png
+        │   │   ├── ...
+        │   └── label
+        │       ├── train_1.png
+        │       ├── train_2.png
+        │       ├── ...
+        └── val
+            ├── pre
+            │   ├── val_10.png
+            │   ├── val_11.png
+            │   ├── ...
+            ├── post
+            │   ├── val_10.png
+            │   ├── val_11.png
+            │   ├── ...
+            └── label
+                ├── val_10.png
+                ├── val_11.png
+                ├── ...
+
+    Args:
+        root (string): root dir of train or validate dataset.
+        extensions (tuple or list): extention of training image.
+    """
     def __init__(self, root, extensions=('jpg'), transform=None):
         self.root = root
         self.extensions = extensions
@@ -212,6 +245,60 @@ class ChangeDetectionDataset(data.Dataset):
                     post_path = pre_path.replace('pre', 'post')
                     label_path = str(Path(pre_path.replace('pre', 'label')).with_suffix('.png'))
                     images.append((pre_path, post_path, label_path))
+
+        return images
+
+    def __len__(self):
+        return len(self.samples)
+
+
+class SegmentationDataset(object):
+    """A generic data loader where the images are arranged in this way: ::
+        .
+        ├── train
+        │   ├── image
+        │   │   ├── train_1.png
+        │   │   ├── train_2.png
+        │   │   ├── ...
+        │   └── label
+        │       ├── train_1.png
+        │       ├── train_2.png
+        │       ├── ...
+        └── val
+            ├── image
+            │   ├── val_10.png
+            │   ├── val_11.png
+            │   ├── ...
+            └── label
+                ├── val_10.png
+                ├── val_11.png
+                ├── ...
+
+    Args:
+        root (string): root dir of train or validate dataset.
+        extensions (tuple or list): extention of training image.
+    """
+    def __init__(self, root, extentions=('jpg'), transforms=None):
+        self.root = root
+        self.extensions = extentions
+        self.transforms = transforms
+
+        self.samples = self._generate_data()
+        pass
+    def __getitem__(self, index):
+        image_img, label_img = [image_loader(x) for x in self.samples[index]]
+        if self.transforms is not None:
+            image_img, label_img = self.transforms(image_img, label_img)
+        return image_img, label_img
+
+    def _generate_data(self):
+        images = []
+        for root, _, fnames in sorted(os.walk(os.path.join(self.root, 'image'))):
+            for fname in sorted(fnames):
+                if has_file_allowed_extension(fname, self.extensions):
+                    image_path = os.path.join(root, fname)
+                    label_path = Path(image_path.replace('image', 'label')).with_suffix('.png')
+                    images.append((image_path, label_path))
 
         return images
 
