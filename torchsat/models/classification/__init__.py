@@ -5,4 +5,4 @@ from .resnet import *
 from .vgg import *
 from .efficientnet import *
 from .senet import *
-from .resnest.resnest import *
+from .resnest import *
