@@ -15,7 +15,7 @@ from torchsat.utils.visualizer import plot_img, plot_bbox, plot_mask
 
 ## Image classification
 
-### 3 channel image
+**1. 3 channel image**
 
 
 ```python
@@ -29,7 +29,7 @@ plot_img(img)
 
 
 
-![png](./data-augumentation/output_4_1.png)
+![](./data-augumentation/output_4_1.png)
 
 
 
@@ -50,10 +50,10 @@ plot_img(result)
 
 
 
-![png](./data-augumentation/output_5_1.png)
+![](./data-augumentation/output_5_1.png)
 
 
-### 8 channel uint16 tiff image
+**2. 8 channel uint16 tiff image**
 
 
 ```python
@@ -71,7 +71,7 @@ plot_img(img, channels=(8,3,1))
 
 
 
-![png](./data-augumentation/output_7_2.png)
+![](./data-augumentation/output_7_2.png)
 
 
 
@@ -93,7 +93,7 @@ plot_img(result, channels=(8,3,1))
 
 
 
-![png](./data-augumentation/output_8_1.png)
+![](./data-augumentation/output_8_1.png)
 
 
 ## Object detection
@@ -131,7 +131,7 @@ plot_bbox(img, bboxes, labels=labels, classes=classes)
 ```
 
 
-![png](./data-augumentation/output_10_0.png)
+![](./data-augumentation/output_10_0.png)
 
 
 
@@ -145,10 +145,10 @@ plot_bbox(result_img, result_bboxes, labels=result_labels, classes=classes)
 ```
 
 
-![png](./data-augumentation/output_11_0.png)
+![](./data-augumentation/output_11_0.png)
 
 
-# Semantic segmentation
+## Semantic segmentation
 
 
 ```python
@@ -160,7 +160,7 @@ plot_mask(img, mask)
 ```
 
 
-![png](./data-augumentation/output_13_0.png)
+![](./data-augumentation/output_13_0.png)
 
 
 
@@ -178,5 +178,5 @@ plot_mask(result_img, result_mask)
 ```
 
 
-![png](./data-augumentation/output_14_0.png)
+![](./data-augumentation/output_14_0.png)
 
