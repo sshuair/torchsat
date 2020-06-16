@@ -82,7 +82,7 @@ Options:
 example:
 ``` bash
 ts calcuate_mean_std --root /tests/classification/val/
-100%|█████████████████████████████████████████████████████████████████| 163/163 [00:02<00:00, 70.53it/s]
+100%|████████████████████████████████████████████████████████████| 163/163 [00:02<00:00, 70.53it/s]
 scaled  mean:[0.36473823 0.40924644 0.41250621]
 scaled  std: [0.09052812 0.07698209 0.0671676 ]
 orginal mean: [ 93.00824798 104.35784201 105.18908467]
@@ -95,8 +95,7 @@ The script can be used for training the model. You can modify the script accordi
 ### scripts/train_cls.py
 
 ```
-$ python test.py --help
-usage: test.py [-h] [--train-path TRAIN_PATH] [--val-path VAL_PATH]
+usage: scripts/train_cls.py [-h] [--train-path TRAIN_PATH] [--val-path VAL_PATH]
                [--model MODEL] [--pretrained PRETRAINED] [--resume PATH]
                [--num-classes NUM_CLASSES] [--in-channels IN_CHANNELS]
                [--device DEVICE] [-b BATCH_SIZE] [--epochs EPOCHS] [--lr LR]

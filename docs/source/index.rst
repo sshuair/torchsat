@@ -25,7 +25,8 @@ TorchSat is an open-source deep learning framework for satellite imagery analysi
    installation.md
    core-conception.md
    tutorials/image-classification.md
-   tutorials/image-segmentation.md
+   tutorials/semantic-segmentation.md
+   tutorials/object-detection.md
    tutorials/change-detection.md
    tools.md
    api/api.rst
