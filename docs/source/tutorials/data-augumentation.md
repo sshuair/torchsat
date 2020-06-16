@@ -1,4 +1,5 @@
 
+# Data Augumentation
 This notebook show the data augmentation for classification, detection and segmentation.
 
 
@@ -12,7 +13,7 @@ from torchsat.transforms import transforms_cls, transforms_det, transforms_seg
 from torchsat.utils.visualizer import plot_img, plot_bbox, plot_mask
 ```
 
-## classification
+## Image classification
 
 ### 3 channel image
 
@@ -95,7 +96,7 @@ plot_img(result, channels=(8,3,1))
 ![png](./data-augumentation/output_8_1.png)
 
 
-# Object detection
+## Object detection
 
 
 ```python
@@ -147,7 +148,7 @@ plot_bbox(result_img, result_bboxes, labels=result_labels, classes=classes)
 ![png](./data-augumentation/output_11_0.png)
 
 
-# Semantic Segmentation
+# Semantic segmentation
 
 
 ```python
