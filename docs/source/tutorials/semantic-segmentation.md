@@ -71,7 +71,7 @@ optional arguments:
 ```
 
 You can also open Tensorboard to view the loss and test accuracy during training.
-![](../_static/img/turotial/tensorboard-segmentation.png)
+![](../_static/img/tensorboard-segmentation.png)
 
 Currently supported models are:
 - UNet

@@ -16,7 +16,7 @@ Suppose we got a scene of sentinel-2 satellite TCI image data. You can download 
 ```
 You should get the following data:
 
-![](../_static/img/turotial/classification_patch.png)
+![](../_static/img/classification_patch.png)
 
 2. **labeling the train data and test data**  
 
@@ -106,7 +106,7 @@ Train Epoch: 2 [320/1514 (21%)] Loss: 0.505005
 ```
 
 You can also open Tensorboard to view the loss and test accuracy during training.
-![](../_static/img/turotial/tensorboard-classification.png)
+![](../_static/img/tensorboard-classification.png)
 
 And we provide lots of classification model, and all of them support multi-channel(>4) tiff image as input.
 - VGG: `vgg11`, `vgg11_bn`, `vgg13`, `vgg13_bn`, `vgg16`, `vgg16_bn`, `vgg19_bn`, `vgg19`
