@@ -13,7 +13,7 @@
 
 TorchSat is an open-source deep learning framework for satellite imagery analysis based on PyTorch.
 
->This project is still work in progress. If you want to know more about it, please refer to the [Roadmap](https://github.com/sshuair/torchsat/wiki/Roadmap) .
+>This project is still work in progress. If you want to know the latest progress, please check the [develop](https://github.com/sshuair/torchsat/tree/develop) branch.
 
 **Hightlight**
 - :wink: Support multi-channels(> 3 channels, e.g. 8 channels) images and TIFF file as input.
