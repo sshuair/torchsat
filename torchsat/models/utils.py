@@ -6,8 +6,7 @@ from .classification.inception import inception_v3
 from .classification.mobilenet import mobilenet_v2
 from .classification.efficientnet import efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4, efficientnet_b5, efficientnet_b6, efficientnet_b7
 from .classification.resnest import resnest50, resnest101, resnest200, resnest269
-from .segmentation.unet import unet34, unet101, unet152
-
+from .segmentation.unet import unet_resnet34, unet_resnet101, unet_resnet152
 
 __all__ = ["get_model"]
 
@@ -47,9 +46,9 @@ models = {
     'resnest200': resnest200,
     'resnest269': resnest269,
 
-    'unet34': unet34,
-    'unet101': unet101,
-    'unet152': unet152,
+    'unet_resnet34': unet_resnet34,
+    'unet_resnet101': unet_resnet101,
+    'unet_resnet152': unet_resnet152,
 }
 
 

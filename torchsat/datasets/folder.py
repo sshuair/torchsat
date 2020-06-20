@@ -223,24 +223,24 @@ class ChangeDetectionDataset(data.Dataset):
         root (string): root dir of train or validate dataset.
         extensions (tuple or list): extention of training image.
     """
-    def __init__(self, root, extensions=('jpg'), transform=None):
+    def __init__(self, root, extentions=('jpg'), transforms=None):
         self.root = root
-        self.extensions = extensions
-        self.transform = transform
+        self.extentions = extentions
+        self.transforms = transforms
 
         self.samples = self._generate_data()
 
     def __getitem__(self, index):
         pre_img, post_img, label_img = [image_loader(x) for x in self.samples[index]]
-        if self.transform is not None:
-            pre_img, post_img, label_img = self.transform(pre_img, post_img, label_img)
+        if self.transforms is not None:
+            pre_img, post_img, label_img = self.transforms(pre_img, post_img, label_img)
         return pre_img, post_img, label_img
 
     def _generate_data(self):
         images = []
         for root, _, fnames in sorted(os.walk(os.path.join(self.root, 'pre'))):
             for fname in sorted(fnames):
-                if has_file_allowed_extension(fname, self.extensions):
+                if has_file_allowed_extension(fname, self.extentions):
                     pre_path = os.path.join(root, fname)
                     post_path = pre_path.replace('pre', 'post')
                     label_path = str(Path(pre_path.replace('pre', 'label')).with_suffix('.png'))

@@ -125,7 +125,7 @@ def main(args):
         train_one_epoch(epoch, train_loader, model, criterion, optimizer, device, writer)
         evalidation(epoch, val_loader, model, criterion, device, writer)
         lr_scheduler.step()
-        torch.save(model.state_dict(), os.path.join(args.ckp_dir, 'cls_epoch_{}.pth'.format(epoch)))
+        torch.save(model.state_dict(), os.path.join(args.ckp_dir, 'seg_epoch_{}.pth'.format(epoch)))
 
 
 def parse_args():
@@ -133,17 +133,17 @@ def parse_args():
     parser.add_argument('--train-path', help='train dataset path')
     parser.add_argument('--val-path', help='validate dataset path')
     parser.add_argument('--extensions', nargs='+', default='jpg', help='the train image extension')
-    parser.add_argument('--model', default="unet34", help='')
-    parser.add_argument('--pretrained', default=True)
+    parser.add_argument('--model', default="unet34", help='model name. default, unet34')
+    parser.add_argument('--pretrained', default=True, help='use ImageNet pretrained params')
 
     parser.add_argument('--resume', default='', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: none)')
     parser.add_argument('--num-classes', default=3, type=int, help='num of classes')
     parser.add_argument('--in-channels', default=3, type=int, help='input image channels')
 
-    parser.add_argument('--device', default='cpu')
-    parser.add_argument('-b', '--batch-size', default=16, type=int)
-    parser.add_argument('--epochs', default=90, type=int)
+    parser.add_argument('--device', default='cpu', help='device')
+    parser.add_argument('-b', '--batch-size', default=16, type=int, help='batch size')
+    parser.add_argument('--epochs', default=90, type=int, help='epochs')
     parser.add_argument('--lr', default=0.001, type=float, help='initial learning rate')
 
     parser.add_argument('--print-freq', default=10, type=int, help='print frequency')

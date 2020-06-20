@@ -6,7 +6,7 @@ import torchvision
 from ..classification import resnet
 
 
-__all__ = ['UNetResNet','unet34', 'unet101', 'unet152']
+__all__ = ['UNetResNet','unet_resnet34', 'unet_resnet101', 'unet_resnet152']
 
 """
 This script has been taken (and modified) from :
@@ -182,16 +182,16 @@ class UNetResNet(nn.Module):
         return self.final(F.dropout2d(dec0, p=self.dropout_2d))
 
 
-def unet34(num_classes, in_channels=3, pretrained=False, **kwargs):
+def unet_resnet34(num_classes, in_channels=3, pretrained=False, **kwargs):
     model = UNetResNet(34, num_classes, in_channels=in_channels, pretrained=pretrained, **kwargs)
     return model
 
 
-def unet101(num_classes, in_channels=3, pretrained=False, **kwargs):
+def unet_resnet101(num_classes, in_channels=3, pretrained=False, **kwargs):
     model = UNetResNet(101, num_classes, in_channels=in_channels, pretrained=pretrained, **kwargs)
     return model
 
 
-def unet152(num_classes, in_channels=3, pretrained=False, **kwargs):
+def unet_resnet152(num_classes, in_channels=3, pretrained=False, **kwargs):
     model = UNetResNet(152, num_classes, in_channels=in_channels, pretrained=pretrained, **kwargs)
     return model
