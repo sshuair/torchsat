@@ -123,4 +123,5 @@ dmypy.json
 .pyre/
 .pytest_cache
 
-develop-notes
+.vscode/
+.idea/

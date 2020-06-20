@@ -1,7 +1,0 @@
-language: python
-matrix:
-  include:
-    - python: 3.5
-    - python: 3.6
-    - python: 3.7
-      env: PYTORCH_WHEEL=https://download.pytorch.org/whl/cpu/torch-1.1.0-cp36-cp36m-linux_x86_64.whl

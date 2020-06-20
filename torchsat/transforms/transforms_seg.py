@@ -417,7 +417,7 @@ class RandomResizedCrop(object):
         h, w = img.shape[0:2]
         th, tw = self.crop_size
         if w == tw and h == tw:
-            return img
+            return img, mask
 
         top = random.randint(0, h - th)
         left = random.randint(0, w - tw)

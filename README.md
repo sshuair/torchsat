@@ -23,17 +23,14 @@ TorchSat is an open-source deep learning framework for satellite imagery analysi
 - :open_mouth: Training script for common satellite vision tasks.
 
 ## Install
-- pypi: `pip3 install torchsat`
 - source: `python3 setup.py install`
-- docker: `docker pull sshuair/torchsat:gpu-latest`
 
 ## How to use
-- **Introduction** - 
-- **Classification tutorial** - 
-- **Data augmentation** - [data-augmentation.ipynb](exsamples/data-augmentation.ipynb)
-- **Data loader** 
-- **models** 
-- **train script** 
+- [Introduction](https://torchsat.readthedocs.io/en/latest/index.html) 
+- Image Classification Tutorial: [Docs](https://torchsat.readthedocs.io/en/latest/tutorials/image-classification.html),  [Google Colab](https://colab.research.google.com/drive/1RLiz6ugYfR8hWP5vNkLjdyKjr6FY8SEy)
+- Semantic Segmentation Tutorial: [Docs](https://torchsat.readthedocs.io/en/latest/tutorials/semantic-segmentation.html)
+- Data Augumentation: [Docs](https://torchsat.readthedocs.io/en/latest/tutorials/data-augumentation.html), [Google Colab](https://colab.research.google.com/drive/1M46TXAM-JNV708Wn0OQDDXnD5nK9yUOK)
+
 
 ## Features
 
@@ -76,11 +73,13 @@ Spatial-level transforms will simultaneously change both an input image as well 
 ### Models
 #### Classification
 All models support multi-channels as input (e.g. 8 channels).
-- VGG: `vgg11`, `vgg11_bn`, `vgg13`, `vgg13_bn`, `vgg16`, `vgg16_bn`,`vgg19_bn`, `vgg19`
-- ResNet: `resnet18`, `resnet34`, `restnet50`, `resnet101`, `resnet152`
-- DenseNet: `densenet121`, `densenet169`, `densenet201`, `densenet161`
+- VGG: `vgg11`, `vgg11_bn`, `vgg13`, `vgg13_bn`, `vgg16`, `vgg16_bn`, `vgg19_bn`, `vgg19`
+- ResNet: `resnet18`, `resnet34`, `resnet50`, `resnet101`, `resnet152`, `resnext50_32x4d`,`resnext101_32x8d`, `wide_resnet50_2`, `wide_resnet101_2`
+- DenseNet: `densenet121`, `densenet169`, `densenet201`
 - Inception: `inception_v3`
 - MobileNet: `mobilenet_v2`
+- EfficientNet: `efficientnet_b0`, `efficientnet_b1`, `efficientnet_b2`, `efficientnet_b3`,`efficientnet_b4`, `efficientnet_b5`, `efficientnet_b6`, `efficientnet_b7`
+- ResNeSt: `resnest50`, `resnest101`, `resnest200`, `resnest269`
 
 #### Sementic Segmentation
 - UNet: `unet`, `unet34`, `unet101`, `unet152` (with resnet as backbone.)
