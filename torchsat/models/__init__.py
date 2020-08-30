@@ -1,3 +1,3 @@
 from .classification import *
 from .segmentation import *
-# from .detection import *
+from .change import *

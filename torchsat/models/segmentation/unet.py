@@ -195,3 +195,9 @@ def unet101(num_classes, in_channels=3, pretrained=False, **kwargs):
 def unet152(num_classes, in_channels=3, pretrained=False, **kwargs):
     model = UNetResNet(152, num_classes, in_channels=in_channels, pretrained=pretrained, **kwargs)
     return model
+
+if __name__ == '__main__':
+    import torch
+    x = torch.randn(size=(2,3,224,224))
+    model = unet34(3)
+    model(x)

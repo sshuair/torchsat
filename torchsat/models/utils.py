@@ -7,6 +7,7 @@ from .classification.mobilenet import mobilenet_v2
 from .classification.efficientnet import efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4, efficientnet_b5, efficientnet_b6, efficientnet_b7
 from .classification.resnest import resnest50, resnest101, resnest200, resnest269
 from .segmentation.unet import unet34, unet101, unet152
+from .segmentation import UNet50
 
 
 __all__ = ["get_model"]
@@ -50,6 +51,7 @@ models = {
     'unet34': unet34,
     'unet101': unet101,
     'unet152': unet152,
+    'unet50': UNet50,
 }
 
 
